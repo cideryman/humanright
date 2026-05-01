@@ -1439,6 +1439,14 @@ function updateFacilitator() {
   nextCardButton.textContent = isComplete ? "처음으로" : "다음 카드";
 }
 
+function moveToQuestionStart() {
+  window.requestAnimationFrame(() => {
+    const questionStart = stage.querySelector(".activity-title");
+    if (!questionStart) return;
+    questionStart.scrollIntoView({ block: "start", inline: "nearest" });
+  });
+}
+
 document.querySelector(".segmented").addEventListener("click", (event) => {
   const button = event.target.closest("button[data-activity]");
   if (!button) return;
@@ -1641,6 +1649,7 @@ prevCardButton.addEventListener("click", () => {
   state.index = Math.max(0, state.index - 1);
   state.safetyAnswer = null;
   render();
+  moveToQuestionStart();
 });
 
 nextCardButton.addEventListener("click", () => {
@@ -1648,18 +1657,21 @@ nextCardButton.addEventListener("click", () => {
     state.index = 0;
     state.safetyAnswer = null;
     render();
+    moveToQuestionStart();
     return;
   }
 
   if (state.activity === "shield" && state.index >= shieldScenes.length) {
     state.index = 0;
     render();
+    moveToQuestionStart();
     return;
   }
 
   state.index += 1;
   state.safetyAnswer = null;
   render();
+  moveToQuestionStart();
 });
 
 document.querySelector("#resetRecord").addEventListener("click", () => {
