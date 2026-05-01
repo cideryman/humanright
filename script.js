@@ -26,6 +26,12 @@ const state = {
   choiceCategory: null,
   choiceSubcategory: null,
   choiceFlow: null,
+  choiceSelections: {},
+  scoredAnswers: {
+    safety: {},
+    shield: {},
+    helpPractice: {},
+  },
   safetyAnswer: null,
 };
 
@@ -1229,6 +1235,91 @@ function updateCounts() {
   document.querySelector("#respectCount").textContent = counts.respect;
 }
 
+function emptyScore() {
+  return { expression: 0, help: 0, respect: 0 };
+}
+
+function questionScoreKey(activity, index = state.index) {
+  return `${activity}-${index}`;
+}
+
+function getScoredAnswer(activity, index = state.index) {
+  return state.scoredAnswers[activity][questionScoreKey(activity, index)];
+}
+
+function applyScoreDelta(previousScore, nextScore) {
+  ["expression", "help", "respect"].forEach((field) => {
+    counts[field] = Math.max(0, counts[field] + (nextScore[field] || 0) - (previousScore[field] || 0));
+  });
+}
+
+function applyScoredAnswer(activity, index, entry) {
+  const key = questionScoreKey(activity, index);
+  const previous = state.scoredAnswers[activity][key];
+  applyScoreDelta(previous?.score || emptyScore(), entry.score || emptyScore());
+  state.scoredAnswers[activity][key] = { ...entry, key, index };
+  return !previous || previous.text !== entry.text || previous.correct !== entry.correct;
+}
+
+function safetyScore(kind, isCorrect) {
+  const score = { expression: 1, help: 0, respect: 0 };
+  if (isCorrect && kind === "help") score.help = 1;
+  if (isCorrect && (kind === "respect" || kind === "safe")) score.respect = 1;
+  return score;
+}
+
+function shieldScore(text, isCorrect) {
+  const score = { expression: 1, help: 0, respect: 0 };
+  if (!isCorrect) return score;
+  if (["도와주세요", "싫어요", "안 돼요", "하지 마세요", "찍지 마세요", "선생님께 말할래요"].includes(text)) score.help = 1;
+  if (["먼저 물어봐요", "알겠어", "멈출게요", "기다릴게요", "먼저 해도 될까요?"].includes(text)) score.respect = 1;
+  return score;
+}
+
+function applyHelpPracticeScore(index = state.index) {
+  const key = questionScoreKey("helpPractice", index);
+  if (state.scoredAnswers.helpPractice[key]) return false;
+  const score = { expression: 0, help: 1, respect: 0 };
+  applyScoreDelta(emptyScore(), score);
+  state.scoredAnswers.helpPractice[key] = { key, index, text: "도움 벨", correct: true, score };
+  return true;
+}
+
+function activityScoreSummary(activity, scenes) {
+  const entries = scenes.map((_, index) => getScoredAnswer(activity, index)).filter(Boolean);
+  const helpPracticeEntries =
+    activity === "shield"
+      ? scenes.map((_, index) => state.scoredAnswers.helpPractice[questionScoreKey("helpPractice", index)]).filter(Boolean)
+      : [];
+  return {
+    answered: entries.length,
+    total: scenes.length,
+    correct: entries.filter((entry) => entry.correct).length,
+    help: entries.reduce((sum, entry) => sum + (entry.score.help || 0), 0) + helpPracticeEntries.length,
+    respect: entries.reduce((sum, entry) => sum + (entry.score.respect || 0), 0),
+  };
+}
+
+function scoreSummaryMarkup(items) {
+  return `
+    <div class="score-summary" aria-label="오늘의 활동 기록">
+      <strong>오늘의 기록</strong>
+      <div class="score-items">
+        ${items
+          .map(
+            (item) => `
+              <article class="score-item ${item.kind || ""}">
+                <span>${item.label}</span>
+                <b>${item.value}</b>
+              </article>
+            `,
+          )
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
 function getActiveChoiceSteps() {
   if (!state.choiceFlow) return [];
   return state.choiceFlow.type === "food" ? foodFlowSteps : clothesFlowSteps;
@@ -1238,6 +1329,7 @@ function renderChoiceSummary() {
   const isFood = state.choiceFlow.type === "food";
   const title = isFood ? "내가 고른 음식이에요" : "내가 고른 것이에요";
   const actionText = isFood ? "다른 것도 골라볼래요" : "다시 처음으로";
+  const visiblePicks = state.choiceFlow.picks.filter((pick) => !pick.skip);
   focusWord.textContent = "선택";
   stage.innerHTML = `
     <div class="activity-title">
@@ -1245,9 +1337,12 @@ function renderChoiceSummary() {
       <p class="prompt">내가 스스로 골랐어요.</p>
       ${readButton(`${title}. 내가 스스로 골랐어요.`)}
     </div>
+    ${scoreSummaryMarkup([
+      { label: "스스로 결정", value: `${state.choiceFlow.picks.length}번`, kind: "choice" },
+      { label: "고른 카드", value: `${visiblePicks.length}개`, kind: "safe" },
+    ])}
     <div class="card-grid summary-grid">
-      ${state.choiceFlow.picks
-        .filter((pick) => !pick.skip)
+      ${visiblePicks
         .map(
           (pick) => `
             <article class="big-card summary-card">
@@ -1433,6 +1528,8 @@ function reviewCard(scene) {
 }
 
 function renderReviewSummary(title, message, scenes) {
+  const activity = title.includes("생활 안전") ? "safety" : "shield";
+  const summary = activityScoreSummary(activity, scenes);
   focusWord.textContent = "복습";
   stage.innerHTML = `
     <div class="activity-title">
@@ -1440,6 +1537,12 @@ function renderReviewSummary(title, message, scenes) {
       <p class="prompt">정답과 오답을 다시 봐요.</p>
       ${readButton(`${title}. 정답과 오답을 다시 봐요.`)}
     </div>
+    ${scoreSummaryMarkup([
+      { label: "답한 질문", value: `${summary.answered}/${summary.total}`, kind: "choice" },
+      { label: "좋은 선택", value: `${summary.correct}개`, kind: "safe" },
+      { label: "도움 연습", value: `${summary.help}번`, kind: "help" },
+      { label: "존중 연습", value: `${summary.respect}번`, kind: "respect" },
+    ])}
     <div class="scene completion review-finish">
       <div class="scene-art">${illustration("respect")}</div>
       <div class="scene-copy">
@@ -1463,6 +1566,7 @@ function renderSafety() {
   const scene = safetyScenes[state.index];
   const sceneText = scene[state.mode];
   const isLastScene = state.index === safetyScenes.length - 1;
+  const selectedAnswer = getScoredAnswer("safety");
   focusWord.textContent = scene.key === "permission" || scene.key === "photoTaking" ? "존중" : "안전";
   stage.innerHTML = `
     <div class="activity-title">
@@ -1482,14 +1586,14 @@ function renderSafety() {
       ${scene.answers
         .map(
           (answer) =>
-            `<button class="pill answer-card ${answer.kind}" data-safety="${answer.kind}" data-correct="${answer.correct}" data-answer="${answer.text}" type="button">
+            `<button class="pill answer-card ${answer.kind} ${selectedAnswer?.text === answer.text ? "selected" : ""}" data-safety="${answer.kind}" data-correct="${answer.correct}" data-answer="${answer.text}" type="button">
               <span class="answer-text">${answer.text}</span>
               ${answerVisual(answer.text, answer.kind)}
             </button>`,
         )
         .join("")}
     </div>
-    ${state.safetyAnswer ? `<div class="correct-answer ${state.safetyAnswer.correct ? "ok" : "retry"}">${scene.answerText}</div>` : ""}
+    ${selectedAnswer ? `<div class="correct-answer ${selectedAnswer.correct ? "ok" : "retry"}">${scene.answerText}</div>` : ""}
   `;
   stage.appendChild(feedback);
 }
@@ -1503,8 +1607,10 @@ function renderShield() {
   const scene = shieldScenes[state.index];
   const sceneText = state.mode === "easy" ? scene.easy : scene.text;
   const isLastScene = state.index === shieldScenes.length - 1;
+  const selectedAnswer = getScoredAnswer("shield");
+  const helpPracticeDone = Boolean(state.scoredAnswers.helpPractice[questionScoreKey("helpPractice")]);
   focusWord.textContent = scene.key === "respect" ? "존중" : "도움";
-  state.bellTaps = 0;
+  state.bellTaps = helpPracticeDone ? 3 : 0;
   stage.innerHTML = `
     <div class="activity-title">
       <h2>싫어요·도와주세요 연습</h2>
@@ -1524,7 +1630,7 @@ function renderShield() {
         .map((answer) => (typeof answer === "string" ? { text: answer, correct: true } : answer))
         .map(
           (answer) =>
-            `<button class="pill answer-card ${answer.correct ? (scene.key === "respect" ? "respect" : "help") : "danger"}" data-shield="${answer.text}" data-correct="${answer.correct}" type="button">
+            `<button class="pill answer-card ${answer.correct ? (scene.key === "respect" ? "respect" : "help") : "danger"} ${selectedAnswer?.text === answer.text ? "selected" : ""}" data-shield="${answer.text}" data-correct="${answer.correct}" type="button">
               <span class="answer-text">${answer.text}</span>
               ${answerVisual(answer.text, answer.correct ? (scene.key === "respect" ? "respect" : "help") : "danger")}
             </button>`,
@@ -1534,10 +1640,10 @@ function renderShield() {
     ${
       scene.key === "respect"
         ? ""
-        : `<div class="help-practice" data-help-practice>
+        : `<div class="help-practice" data-help-practice data-complete="${helpPracticeDone ? "true" : "false"}">
             <button class="bell" data-help-bell type="button">${bellIcon()}<span>도움 벨</span></button>
             <div class="gauge" aria-label="도움 요청 연습 게이지">
-              <div class="gauge-fill" data-gauge-fill></div>
+              <div class="gauge-fill" data-gauge-fill style="width: ${helpPracticeDone ? "100%" : "0%"}"></div>
             </div>
           </div>`
     }
@@ -1643,9 +1749,8 @@ stage.addEventListener("click", (event) => {
     speak("도와주세요");
     if (state.bellTaps >= 3) {
       practice.dataset.complete = "true";
-      counts.help += 1;
-      counts.expression += 1;
-      addRecord("도움 벨 3번 누르기");
+      const isNewPractice = applyHelpPracticeScore(state.index);
+      if (isNewPractice) addRecord("도움 벨 3번 누르기");
       setFeedback("도움을 요청했어요.");
       updateCounts();
     }
@@ -1732,13 +1837,17 @@ stage.addEventListener("click", (event) => {
     lockInteraction();
     document.querySelectorAll(".big-card").forEach((card) => card.classList.remove("selected"));
     choiceOption.classList.add("selected");
-    counts.choice += 1;
-    counts.expression += 1;
     speak(choiceOption.dataset.speak);
     const selectedCategory = choiceCategories.find((category) => category.key === state.choiceCategory);
     const selectedOption = selectedCategory?.options.find((option) => option.key === choiceOption.dataset.choiceOption);
     const selectedTitle = selectedOption?.title || "선택";
-    addRecord(`${selectedTitle} 선택`);
+    const previousChoice = state.choiceSelections[state.choiceCategory];
+    if (!previousChoice) {
+      counts.choice += 1;
+      counts.expression += 1;
+    }
+    if (previousChoice?.title !== selectedTitle) addRecord(`${selectedTitle} 선택`);
+    state.choiceSelections[state.choiceCategory] = { key: choiceOption.dataset.choiceOption, title: selectedTitle };
     setFeedback(`${selectedTitle}을 골랐어요.`);
     moveToChoiceStart();
   }
@@ -1747,13 +1856,14 @@ stage.addEventListener("click", (event) => {
     lockInteraction();
     const answerText = safety.dataset.answer;
     const isCorrect = safety.dataset.correct === "true";
-    counts.expression += 1;
-    if (isCorrect && safety.dataset.safety === "help") counts.help += 1;
-    if (isCorrect && safety.dataset.safety === "respect") counts.respect += 1;
-    if (isCorrect && safety.dataset.safety === "safe") counts.respect += 1;
     speak(answerText);
-    addRecord(`생활 안전: ${answerText}`);
-    state.safetyAnswer = { correct: isCorrect, text: answerText };
+    const changed = applyScoredAnswer("safety", state.index, {
+      text: answerText,
+      correct: isCorrect,
+      score: safetyScore(safety.dataset.safety, isCorrect),
+    });
+    if (changed) addRecord(`생활 안전: ${answerText}`);
+    state.safetyAnswer = getScoredAnswer("safety");
     setFeedback(isCorrect ? "좋은 방법이에요." : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
     renderSafety();
   }
@@ -1761,12 +1871,15 @@ stage.addEventListener("click", (event) => {
   if (shield) {
     lockInteraction();
     const isCorrect = shield.dataset.correct !== "false";
-    counts.expression += 1;
-    if (isCorrect && ["도와주세요", "싫어요", "안 돼요", "하지 마세요", "찍지 마세요", "선생님께 말할래요"].includes(shield.dataset.shield)) counts.help += 1;
-    if (isCorrect && ["먼저 물어봐요", "알겠어", "멈출게요", "기다릴게요", "먼저 해도 될까요?"].includes(shield.dataset.shield)) counts.respect += 1;
     speak(shield.dataset.shield);
-    addRecord(`말하기 연습: ${shield.dataset.shield}`);
+    const changed = applyScoredAnswer("shield", state.index, {
+      text: shield.dataset.shield,
+      correct: isCorrect,
+      score: shieldScore(shield.dataset.shield, isCorrect),
+    });
+    if (changed) addRecord(`말하기 연습: ${shield.dataset.shield}`);
     setFeedback(isCorrect ? `${shield.dataset.shield}.` : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
+    renderShield();
   }
 
   updateCounts();
@@ -1838,6 +1951,12 @@ document.querySelector("#resetRecord").addEventListener("click", () => {
   state.choiceCategory = null;
   state.choiceSubcategory = null;
   state.choiceFlow = null;
+  state.choiceSelections = {};
+  state.scoredAnswers = {
+    safety: {},
+    shield: {},
+    helpPractice: {},
+  };
   updateCounts();
   render();
 });
