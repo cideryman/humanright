@@ -333,6 +333,7 @@ const shieldScenes = [
     easy: "안 돼요.",
     text: "누군가 내 물건을 말없이 가져가려고 해요.",
     question: "내 물건을 쓰고 싶으면 어떻게 해야 할까요?",
+    answerText: "좋은 방법: 내 물건은 안 된다고 말해요. 필요하면 선생님께 말해요.",
     answers: [
       { text: "안 돼요", correct: true },
       { text: "그냥 지켜봐요", correct: false },
@@ -345,6 +346,7 @@ const shieldScenes = [
     easy: "싫어요.",
     text: "누군가 가까이 와서 불편해요.",
     question: "불편할 때 어떤 말을 할 수 있을까요?",
+    answerText: "좋은 방법: 싫어요, 하지 마세요, 도와주세요라고 말해요.",
     answers: [
       { text: "싫어요", correct: true },
       { text: "하지 마세요", correct: true },
@@ -358,6 +360,7 @@ const shieldScenes = [
     easy: "찍지 마세요.",
     text: "누군가 내 사진을 찍으려고 해서 싫어요.",
     question: "사진을 찍기 싫을 때 어떤 말을 할까요?",
+    answerText: "좋은 방법: 찍지 마세요라고 말하고 선생님께 말해요.",
     answers: [
       { text: "찍지 마세요", correct: true },
       { text: "싫어요", correct: true },
@@ -371,6 +374,7 @@ const shieldScenes = [
     easy: "멈출게요.",
     text: "친구가 싫다고 말했어요.",
     question: "친구가 싫다고 하면 어떻게 해야 할까요?",
+    answerText: "좋은 방법: 친구가 싫다고 하면 멈추고 알겠다고 말해요.",
     answers: [
       { text: "알겠어", correct: true },
       { text: "멈출게요", correct: true },
@@ -383,6 +387,7 @@ const shieldScenes = [
     easy: "기다릴게요.",
     text: "친구 차례예요. 나는 조금 기다려야 해요.",
     question: "친구 차례일 때 어떻게 말할까요?",
+    answerText: "좋은 방법: 내 차례를 기다리거나 먼저 해도 되는지 물어봐요.",
     answers: [
       { text: "기다릴게요", correct: true },
       { text: "먼저 해도 될까요?", correct: true },
@@ -1367,9 +1372,91 @@ function renderCompletion(title, message) {
   stage.appendChild(feedback);
 }
 
+function normalizedAnswers(scene) {
+  return scene.answers.map((answer) => (typeof answer === "string" ? { text: answer, correct: true } : answer));
+}
+
+function cleanGuidance(text) {
+  return (text || "").replace(/^좋은 방법:\s*/, "");
+}
+
+function reviewCard(scene) {
+  const answers = normalizedAnswers(scene);
+  const correctAnswers = answers.filter((answer) => answer.correct);
+  const wrongAnswers = answers.filter((answer) => !answer.correct);
+  const guidance = cleanGuidance(scene.answerText);
+
+  return `
+    <article class="review-card">
+      <div class="review-scene">
+        <div class="review-art">${illustration(scene.imageKey || scene.key)}</div>
+        <div>
+          <strong>${scene.title}</strong>
+          <p>${scene.question}</p>
+        </div>
+      </div>
+      <div class="review-columns">
+        <section class="review-section">
+          <h3>정답</h3>
+          <ul class="review-answers">
+            ${correctAnswers
+              .map(
+                (answer) => `
+                  <li class="review-answer ok">
+                    <span>좋은 선택</span>
+                    <strong>${answer.text}</strong>
+                  </li>
+                `,
+              )
+              .join("")}
+          </ul>
+        </section>
+        <section class="review-section">
+          <h3>오답</h3>
+          <ul class="review-answers">
+            ${wrongAnswers
+              .map(
+                (answer) => `
+                  <li class="review-answer retry">
+                    <span>조심할 선택</span>
+                    <strong>${answer.text}</strong>
+                    <small>바른 행동: ${guidance}</small>
+                  </li>
+                `,
+              )
+              .join("")}
+          </ul>
+        </section>
+      </div>
+    </article>
+  `;
+}
+
+function renderReviewSummary(title, message, scenes) {
+  focusWord.textContent = "복습";
+  stage.innerHTML = `
+    <div class="activity-title">
+      <h2>${title}</h2>
+      <p class="prompt">정답과 오답을 다시 봐요.</p>
+      ${readButton(`${title}. 정답과 오답을 다시 봐요.`)}
+    </div>
+    <div class="scene completion review-finish">
+      <div class="scene-art">${illustration("respect")}</div>
+      <div class="scene-copy">
+        <strong>참 잘했어요</strong>
+        <p>${message}</p>
+      </div>
+    </div>
+    <div class="review-list">
+      ${scenes.map((scene) => reviewCard(scene)).join("")}
+    </div>
+  `;
+  stage.appendChild(feedback);
+}
+
 function renderSafety() {
   if (state.index >= safetyScenes.length) {
-    renderCompletion("생활 안전 고르기", "괜찮은 상황, 불편한 상황, 도움이 필요한 상황을 골라 보았어요.");
+    renderReviewSummary("생활 안전 복습", "괜찮은 상황, 불편한 상황, 도움이 필요한 상황을 골라 보았어요.", safetyScenes);
     return;
   }
 
@@ -1409,7 +1496,7 @@ function renderSafety() {
 
 function renderShield() {
   if (state.index >= shieldScenes.length) {
-    renderCompletion("싫어요·도와주세요 연습", "싫을 때 말하기, 도움 요청하기, 친구의 말 존중하기를 연습했어요.");
+    renderReviewSummary("말하기 연습 복습", "싫을 때 말하기, 도움 요청하기, 친구의 말 존중하기를 연습했어요.", shieldScenes);
     return;
   }
 
