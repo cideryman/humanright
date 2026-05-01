@@ -1,13 +1,13 @@
 const CACHE_NAME = "rights-board-v1";
 
 // Icon files expected by manifest.json:
-// /icons/icon-192.png
-// /icons/icon-512.png
+// ./icons/icon-192.png
+// ./icons/icon-512.png
 const FILES_TO_CACHE = [
-  "/",
-  "/index.html",
-  "/styles.css",
-  "/script.js",
+  "./",
+  "./index.html",
+  "./styles.css",
+  "./script.js",
 ];
 
 self.addEventListener("install", (event) => {
