@@ -1125,8 +1125,28 @@ function speak(text) {
   }
 }
 
+function speakerIcon() {
+  return `
+    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 9v6h4l5 4V5L8 9H4z"></path>
+      <path d="M16 8c1.2 1.1 1.8 2.4 1.8 4s-.6 2.9-1.8 4"></path>
+      <path d="M18.7 5.5A8.6 8.6 0 0 1 21 12a8.6 8.6 0 0 1-2.3 6.5"></path>
+    </svg>
+  `;
+}
+
+function bellIcon() {
+  return `
+    <svg class="button-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 10a6 6 0 0 1 12 0c0 4 2 5 2 7H4c0-2 2-3 2-7z"></path>
+      <path d="M9.5 20a3 3 0 0 0 5 0"></path>
+      <path d="M12 3V2"></path>
+    </svg>
+  `;
+}
+
 function readButton(text) {
-  return `<button class="listen" data-speak="${text}" type="button" aria-label="읽어주기">듣기</button>`;
+  return `<button class="listen" data-speak="${text}" type="button" aria-label="읽어주기">${speakerIcon()}<span>듣기</span></button>`;
 }
 
 function addRecord(text) {
@@ -1162,10 +1182,35 @@ function playWarningTone() {
   }
 }
 
+function playPositiveTone() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const context = new AudioContext();
+    const gain = context.createGain();
+    gain.gain.setValueAtTime(0.001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.12, context.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.34);
+    gain.connect(context.destination);
+
+    [523.25, 659.25, 783.99].forEach((frequency, index) => {
+      const oscillator = context.createOscillator();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequency, context.currentTime + index * 0.08);
+      oscillator.connect(gain);
+      oscillator.start(context.currentTime + index * 0.08);
+      oscillator.stop(context.currentTime + index * 0.08 + 0.16);
+    });
+  } catch {
+    // Audio feedback is optional; visual feedback still works.
+  }
+}
+
 function setFeedback(message, label = "좋아요", tone = "positive") {
   feedback.textContent = message;
   showCelebration(label, tone);
   if (tone === "warning") playWarningTone();
+  if (tone === "positive") playPositiveTone();
   window.clearTimeout(setFeedback.timer);
   setFeedback.timer = window.setTimeout(() => {
     feedback.textContent = "";
@@ -1314,7 +1359,7 @@ function renderCompletion(title, message) {
     <div class="scene completion">
       <div class="scene-art">${illustration("respect")}</div>
       <div class="scene-copy">
-        <strong>잘 연습했어요</strong>
+        <strong>참 잘했어요</strong>
         <p>${message}</p>
       </div>
     </div>
@@ -1403,7 +1448,7 @@ function renderShield() {
       scene.key === "respect"
         ? ""
         : `<div class="help-practice" data-help-practice>
-            <button class="bell" data-help-bell type="button">도움 벨</button>
+            <button class="bell" data-help-bell type="button">${bellIcon()}<span>도움 벨</span></button>
             <div class="gauge" aria-label="도움 요청 연습 게이지">
               <div class="gauge-fill" data-gauge-fill></div>
             </div>
@@ -1444,6 +1489,14 @@ function moveToQuestionStart() {
     const questionStart = stage.querySelector(".activity-title");
     if (!questionStart) return;
     questionStart.scrollIntoView({ block: "start", inline: "nearest" });
+  });
+}
+
+function moveToChoiceStart() {
+  window.requestAnimationFrame(() => {
+    const choiceStart = stage.querySelector(".activity-title");
+    if (!choiceStart) return;
+    choiceStart.scrollIntoView({ block: "start", inline: "nearest" });
   });
 }
 
@@ -1517,6 +1570,7 @@ stage.addEventListener("click", (event) => {
     state.choiceCategory = null;
     state.choiceSubcategory = null;
     renderChoice();
+    moveToChoiceStart();
     return;
   }
 
@@ -1530,6 +1584,7 @@ stage.addEventListener("click", (event) => {
       speak(choiceCategory.dataset.speak);
       addRecord(`선택 종류: ${choiceCategory.dataset.choiceTitle}`);
       renderChoice();
+      moveToChoiceStart();
       return;
     }
 
@@ -1538,6 +1593,7 @@ stage.addEventListener("click", (event) => {
     speak(choiceCategory.dataset.speak);
     addRecord(`선택 종류: ${choiceCategory.dataset.choiceTitle}`);
     renderChoice();
+    moveToChoiceStart();
     return;
   }
 
@@ -1547,6 +1603,7 @@ stage.addEventListener("click", (event) => {
     speak(choiceSubcategory.dataset.speak);
     addRecord(`옷 종류: ${choiceSubcategory.dataset.choiceTitle}`);
     renderChoice();
+    moveToChoiceStart();
     return;
   }
 
@@ -1554,6 +1611,7 @@ stage.addEventListener("click", (event) => {
     state.choiceCategory = null;
     state.choiceSubcategory = null;
     renderChoice();
+    moveToChoiceStart();
     return;
   }
 
@@ -1574,10 +1632,12 @@ stage.addEventListener("click", (event) => {
     counts.expression += 1;
     speak(option.speak);
     addRecord(`${step.resultLabel}: ${option.title}`);
-    setFeedback(`${option.title} 선택`);
     state.choiceFlow.step += 1;
+    const isFlowComplete = state.choiceFlow.step >= steps.length;
     updateCounts();
     renderChoice();
+    moveToChoiceStart();
+    setFeedback(isFlowComplete ? "참 잘했어요." : `${option.title} 선택`, isFlowComplete ? "참 잘했어요" : "좋아요");
     return;
   }
 
@@ -1593,6 +1653,7 @@ stage.addEventListener("click", (event) => {
     const selectedTitle = selectedOption?.title || "선택";
     addRecord(`${selectedTitle} 선택`);
     setFeedback(`${selectedTitle}을 골랐어요.`);
+    moveToChoiceStart();
   }
 
   if (safety) {
@@ -1672,6 +1733,12 @@ nextCardButton.addEventListener("click", () => {
   state.safetyAnswer = null;
   render();
   moveToQuestionStart();
+  if (state.activity === "safety" && state.index >= safetyScenes.length) {
+    setFeedback("참 잘했어요.", "참 잘했어요");
+  }
+  if (state.activity === "shield" && state.index >= shieldScenes.length) {
+    setFeedback("참 잘했어요.", "참 잘했어요");
+  }
 });
 
 document.querySelector("#resetRecord").addEventListener("click", () => {

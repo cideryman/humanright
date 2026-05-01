@@ -1,4 +1,4 @@
-const CACHE_NAME = "rights-board-v2";
+const CACHE_NAME = "rights-board-v3";
 
 // Icon files expected by manifest.json:
 // ./icons/icon-192.png
@@ -11,6 +11,7 @@ const FILES_TO_CACHE = [
 ];
 
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(FILES_TO_CACHE)),
   );
