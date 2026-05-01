@@ -1,0 +1,1695 @@
+const stage = document.querySelector("#stage");
+const focusWord = document.querySelector("#focusWord");
+const feedback = document.createElement("div");
+const celebration = document.querySelector("#celebration");
+const expressionModal = document.querySelector("#expressionModal");
+const logModal = document.querySelector("#logModal");
+const logList = document.querySelector("#logList");
+const facilitator = document.querySelector(".facilitator");
+const acceptExpressionButton = document.querySelector("#acceptExpression");
+const prevCardButton = document.querySelector("#prevCard");
+const nextCardButton = document.querySelector("#nextCard");
+feedback.className = "feedback";
+
+const counts = {
+  choice: 0,
+  expression: 0,
+  help: 0,
+  respect: 0,
+};
+
+const state = {
+  activity: "choice",
+  mode: "visual",
+  index: 0,
+  bellTaps: 0,
+  choiceCategory: null,
+  choiceSubcategory: null,
+  choiceFlow: null,
+  safetyAnswer: null,
+};
+
+const records = [];
+let interactionLocked = false;
+
+function lockInteraction(duration = 600) {
+  interactionLocked = true;
+  stage.classList.add("is-locked");
+  window.setTimeout(() => {
+    interactionLocked = false;
+    stage.classList.remove("is-locked");
+  }, duration);
+}
+
+const choiceCategories = [
+  {
+    key: "food",
+    title: "음식",
+    text: "먹고 싶은 것을 골라요",
+    options: [
+      { key: "bibimbap", title: "비빔밥", speak: "비빔밥을 골랐어요." },
+      { key: "ramen", title: "라면", speak: "라면을 골랐어요." },
+      { key: "udon", title: "우동", speak: "우동을 골랐어요." },
+      { key: "kimbap", title: "김밥", speak: "김밥을 골랐어요." },
+    ],
+  },
+  {
+    key: "clothes",
+    title: "옷",
+    text: "옷의 디자인을 골라요",
+    options: [
+      {
+        key: "tshirt",
+        title: "반팔 티",
+        speak: "반팔 티 디자인을 골라요.",
+        options: [
+          { key: "tshirtGreen", title: "초록 반팔", speak: "초록 반팔 티를 골랐어요." },
+          { key: "tshirtBlue", title: "파란 반팔", speak: "파란 반팔 티를 골랐어요." },
+          { key: "tshirtStripe", title: "줄무늬 반팔", speak: "줄무늬 반팔 티를 골랐어요." },
+          { key: "tshirtStar", title: "별무늬 반팔", speak: "별무늬 반팔 티를 골랐어요." },
+        ],
+      },
+      {
+        key: "jumper",
+        title: "잠바",
+        speak: "잠바 디자인을 골라요.",
+        options: [
+          { key: "jumperBlue", title: "파란 잠바", speak: "파란 잠바를 골랐어요." },
+          { key: "jumperZip", title: "지퍼 잠바", speak: "지퍼 잠바를 골랐어요." },
+          { key: "jumperPocket", title: "주머니 잠바", speak: "주머니 잠바를 골랐어요." },
+          { key: "jumperWarm", title: "따뜻한 잠바", speak: "따뜻한 잠바를 골랐어요." },
+        ],
+      },
+      {
+        key: "tracksuit",
+        title: "츄리닝",
+        speak: "츄리닝 디자인을 골라요.",
+        options: [
+          { key: "tracksuitGreen", title: "초록 츄리닝", speak: "초록 츄리닝을 골랐어요." },
+          { key: "tracksuitBlue", title: "파란 츄리닝", speak: "파란 츄리닝을 골랐어요." },
+          { key: "tracksuitLine", title: "줄무늬 츄리닝", speak: "줄무늬 츄리닝을 골랐어요." },
+          { key: "tracksuitSet", title: "상하의 세트", speak: "상하의 세트를 골랐어요." },
+        ],
+      },
+      {
+        key: "vest",
+        title: "조끼",
+        speak: "조끼 디자인을 골라요.",
+        options: [
+          { key: "vestBlue", title: "파란 조끼", speak: "파란 조끼를 골랐어요." },
+          { key: "vestPocket", title: "주머니 조끼", speak: "주머니 조끼를 골랐어요." },
+          { key: "vestWarm", title: "따뜻한 조끼", speak: "따뜻한 조끼를 골랐어요." },
+          { key: "vestZip", title: "지퍼 조끼", speak: "지퍼 조끼를 골랐어요." },
+        ],
+      },
+      {
+        key: "hoodie",
+        title: "후드티",
+        speak: "후드티 디자인을 골라요.",
+        options: [
+          { key: "hoodieGreen", title: "초록 후드티", speak: "초록 후드티를 골랐어요." },
+          { key: "hoodieBlue", title: "파란 후드티", speak: "파란 후드티를 골랐어요." },
+          { key: "hoodiePocket", title: "주머니 후드티", speak: "주머니 후드티를 골랐어요." },
+          { key: "hoodieLine", title: "끈 있는 후드티", speak: "끈 있는 후드티를 골랐어요." },
+        ],
+      },
+      {
+        key: "pants",
+        title: "바지",
+        speak: "바지 디자인을 골라요.",
+        options: [
+          { key: "jeans", title: "청바지", speak: "청바지를 골랐어요." },
+          { key: "shorts", title: "반바지", speak: "반바지를 골랐어요." },
+          { key: "cargoPants", title: "카고바지", speak: "카고바지를 골랐어요." },
+          { key: "slacks", title: "정장바지", speak: "정장바지를 골랐어요." },
+        ],
+      },
+    ],
+  },
+  {
+    key: "seat",
+    title: "자리",
+    text: "앉고 싶은 곳을 골라요",
+    options: [
+      { key: "chair", title: "의자", speak: "의자를 골랐어요." },
+      { key: "sofa", title: "소파", speak: "소파를 골랐어요." },
+      { key: "mat", title: "매트", speak: "매트를 골랐어요." },
+      { key: "desk", title: "책상 자리", speak: "책상 자리를 골랐어요." },
+    ],
+  },
+  {
+    key: "activity",
+    title: "활동",
+    text: "하고 싶은 활동을 골라요",
+    note: "공동 시간과 개인 선택 시간을 구분해요. 수업 시간에는 함께 정한 활동을 하고, 선택 시간에는 내가 고를 수 있어요.",
+    options: [
+      { key: "drawing", title: "그림을 그릴래요", speak: "그림을 그릴래요." },
+      { key: "music", title: "음악을 들을래요", speak: "음악을 들을래요." },
+      { key: "walk", title: "산책을 할래요", speak: "산책을 할래요." },
+      { key: "game", title: "놀고 싶어요", speak: "놀고 싶어요." },
+    ],
+  },
+];
+
+const foodFlowSteps = [
+  {
+    key: "meal",
+    title: "음식 고르기",
+    prompt: "먹고 싶은 음식을 골라요.",
+    resultLabel: "음식",
+    options: choiceCategories.find((category) => category.key === "food").options,
+  },
+  {
+    key: "drink",
+    title: "음료수 고르기",
+    prompt: "마시고 싶은 것을 골라요.",
+    resultLabel: "음료수",
+    options: [
+      { key: "water", title: "물", speak: "물을 골랐어요." },
+      { key: "juice", title: "주스", speak: "주스를 골랐어요." },
+      { key: "milk", title: "우유", speak: "우유를 골랐어요." },
+      { key: "tea", title: "차", speak: "차를 골랐어요." },
+    ],
+  },
+  {
+    key: "snack",
+    title: "간식 고르기",
+    prompt: "먹고 싶은 간식을 골라요.",
+    resultLabel: "간식",
+    options: [
+      { key: "fruit", title: "과일", speak: "과일을 골랐어요." },
+      { key: "cookie", title: "과자", speak: "과자를 골랐어요." },
+      { key: "bread", title: "빵", speak: "빵을 골랐어요." },
+      { key: "yogurt", title: "요구르트", speak: "요구르트를 골랐어요." },
+    ],
+  },
+];
+
+const clothesFlowSteps = [
+  {
+    key: "pants",
+    title: "바지 고르기",
+    prompt: "입고 싶은 바지를 골라요.",
+    resultLabel: "바지",
+    options: choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "pants").options,
+  },
+  {
+    key: "tshirt",
+    title: "반팔티 고르기",
+    prompt: "입고 싶은 반팔티를 골라요.",
+    resultLabel: "반팔티",
+    options: choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "tshirt").options,
+  },
+  {
+    key: "jumper",
+    title: "잠바 고르기",
+    prompt: "잠바를 입을지 골라요.",
+    resultLabel: "잠바",
+    options: [
+      ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "jumper").options,
+      { key: "noWear", title: "안 입을래요", speak: "잠바는 안 입을래요.", skip: true },
+    ],
+  },
+  {
+    key: "tracksuit",
+    title: "츄리닝 고르기",
+    prompt: "츄리닝을 입을지 골라요.",
+    resultLabel: "츄리닝",
+    options: [
+      ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "tracksuit").options,
+      { key: "noWear", title: "안 입을래요", speak: "츄리닝은 안 입을래요.", skip: true },
+    ],
+  },
+  {
+    key: "vest",
+    title: "조끼 고르기",
+    prompt: "조끼를 입을지 골라요.",
+    resultLabel: "조끼",
+    options: [
+      ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "vest").options,
+      { key: "noWear", title: "안 입을래요", speak: "조끼는 안 입을래요.", skip: true },
+    ],
+  },
+  {
+    key: "hoodie",
+    title: "후드티 고르기",
+    prompt: "후드티를 입을지 골라요.",
+    resultLabel: "후드티",
+    options: [
+      ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "hoodie").options,
+      { key: "noWear", title: "안 입을래요", speak: "후드티는 안 입을래요.", skip: true },
+    ],
+  },
+  {
+    key: "shoes",
+    title: "신발 고르기",
+    prompt: "신고 싶은 신발을 골라요.",
+    resultLabel: "신발",
+    options: [
+      { key: "slippers", title: "슬리퍼", speak: "슬리퍼를 골랐어요." },
+      { key: "sneakers", title: "운동화", speak: "운동화를 골랐어요." },
+      { key: "dressShoes", title: "구두", speak: "구두를 골랐어요." },
+    ],
+  },
+];
+
+const safetyScenes = [
+  {
+    key: "permission",
+    imageKey: "safe",
+    title: "친구 물건",
+    visual: "친구의 물건을 쓰고 싶어요.",
+    story: "친구의 물건이 좋아 보여요. 쓰고 싶을 때 어떻게 하면 좋을까요?",
+    question: "친구 물건을 쓰고 싶을 때 어떻게 말할까요?",
+    answerText: "좋은 방법: 친구 물건은 먼저 물어봐요.",
+    answers: [
+      { text: "제가 이거 써 봐도 될까요?", kind: "respect", correct: true },
+      { text: "묻지 않고 쓴다", kind: "danger", correct: false },
+      { text: "몰래 가져간다", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "friendTeasing",
+    imageKey: "friendTeasing",
+    title: "불편한 장난",
+    visual: "친구의 장난이나 말 때문에 마음이 불편해요.",
+    story: "친구의 장난이나 말 때문에 마음이 불편해요. 이럴 때 어떻게 하면 좋을까요?",
+    question: "싫은 장난이나 불편한 말이 있으면 어떻게 할까요?",
+    answerText: "좋은 방법: 불편하면 말하거나 도움을 요청해요.",
+    answers: [
+      { text: "상대에게 하지 말라고 말해요", kind: "help", correct: true },
+      { text: "선생님에게 말해요", kind: "help", correct: true },
+      { text: "가족에게 말해요", kind: "help", correct: true },
+      { text: "혼자 참아요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "lostStreet",
+    imageKey: "lostStreet",
+    title: "길을 잃었어요",
+    visual: "길을 잃어서 어디로 가야 할지 모르겠어요.",
+    story: "길을 잃거나 무서운 일이 생겼어요. 이럴 때 어떻게 하면 좋을까요?",
+    question: "도움이 필요할 때 어떤 말을 할까요?",
+    answerText: "좋은 방법: 안전한 곳에서 도와주세요라고 말해요.",
+    answers: [
+      { text: "도와주세요", kind: "help", correct: true },
+      { text: "그냥 뛰어가요", kind: "danger", correct: false },
+      { text: "아무에게나 따라가요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "strangerCaution",
+    title: "모르는 사람",
+    imageKey: "strangerCaution",
+    visual: "모르는 사람이 밖으로 같이 가자고 해요.",
+    story: "모르는 사람이 밖으로 같이 가자고 해요. 이럴 때 어떻게 하면 좋을까요?",
+    question: "모르는 사람이 같이 가자고 하면 어떻게 할까요?",
+    answerText: "좋은 방법: 따라가지 않고 선생님이나 가족에게 말해요.",
+    answers: [
+      { text: "선생님에게 말해요", kind: "help", correct: true },
+      { text: "따라가지 않아요", kind: "safe", correct: true },
+      { text: "그냥 따라가요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "photoTaking",
+    title: "사진 찍기",
+    visual: "누군가 내 사진을 찍으려고 해요.",
+    story: "누군가 내 사진을 찍으려고 해요. 싫을 때 어떻게 하면 좋을까요?",
+    question: "사진을 찍기 싫으면 어떻게 말할까요?",
+    answerText: "좋은 방법: 싫으면 찍지 말라고 말하고 선생님에게 알려요.",
+    answers: [
+      { text: "찍지 마세요", kind: "help", correct: true },
+      { text: "선생님에게 말해요", kind: "help", correct: true },
+      { text: "싫어도 참아요", kind: "danger", correct: false },
+    ],
+  },
+];
+
+const shieldScenes = [
+  {
+    key: "personalItem",
+    title: "내 물건",
+    easy: "안 돼요.",
+    text: "누군가 내 물건을 말없이 가져가려고 해요.",
+    question: "내 물건을 쓰고 싶으면 어떻게 해야 할까요?",
+    answers: [
+      { text: "안 돼요", correct: true },
+      { text: "그냥 지켜봐요", correct: false },
+    ],
+  },
+  {
+    key: "bodyBoundary",
+    imageKey: "bodyTouch",
+    title: "내 몸",
+    easy: "싫어요.",
+    text: "누군가 가까이 와서 불편해요.",
+    question: "불편할 때 어떤 말을 할 수 있을까요?",
+    answers: [
+      { text: "싫어요", correct: true },
+      { text: "하지 마세요", correct: true },
+      { text: "도와주세요", correct: true },
+      { text: "그냥 참아요", correct: false },
+    ],
+  },
+  {
+    key: "photoTaking",
+    title: "내 사진",
+    easy: "찍지 마세요.",
+    text: "누군가 내 사진을 찍으려고 해서 싫어요.",
+    question: "사진을 찍기 싫을 때 어떤 말을 할까요?",
+    answers: [
+      { text: "찍지 마세요", correct: true },
+      { text: "싫어요", correct: true },
+      { text: "선생님께 말할래요", correct: true },
+      { text: "그냥 참아요", correct: false },
+    ],
+  },
+  {
+    key: "respect",
+    title: "친구의 말",
+    easy: "멈출게요.",
+    text: "친구가 싫다고 말했어요.",
+    question: "친구가 싫다고 하면 어떻게 해야 할까요?",
+    answers: [
+      { text: "알겠어", correct: true },
+      { text: "멈출게요", correct: true },
+      { text: "계속 말해요", correct: false },
+    ],
+  },
+  {
+    key: "respect",
+    title: "차례 지키기",
+    easy: "기다릴게요.",
+    text: "친구 차례예요. 나는 조금 기다려야 해요.",
+    question: "친구 차례일 때 어떻게 말할까요?",
+    answers: [
+      { text: "기다릴게요", correct: true },
+      { text: "먼저 해도 될까요?", correct: true },
+      { text: "세치기", correct: false },
+    ],
+  },
+];
+
+function person(x, y, shirt = "shirt-a") {
+  return `
+    <circle class="skin" cx="${x}" cy="${y}" r="17"></circle>
+    <path class="hair" d="M${x - 18} ${y - 2}c3-19 31-21 36 0-5-8-25-8-36 0z"></path>
+    <path class="${shirt}" d="M${x - 30} ${y + 62}c3-28 15-42 30-42s27 14 30 42z"></path>
+    <path class="line" d="M${x - 18} ${y + 30}l-22 18M${x + 18} ${y + 30}l22 18"></path>
+    <path class="line" d="M${x - 7} ${y + 2}c5 5 10 5 15 0"></path>
+  `;
+}
+
+function pictogram(type) {
+  const base = (body, extraClass = "") => `
+    <svg class="pictogram ${extraClass}" viewBox="0 0 260 190" aria-hidden="true">
+      <rect class="pic-bg" x="10" y="10" width="240" height="170" rx="16"></rect>
+      ${body}
+    </svg>
+  `;
+
+  const bowl = (fill, contents, steam = "") =>
+    base(`
+      ${steam}
+      <ellipse class="pic-white" cx="130" cy="105" rx="82" ry="34"></ellipse>
+      <path class="${fill}" d="M50 105c8 58 152 58 160 0z"></path>
+      <path class="pic-line" d="M48 105c0-22 164-22 164 0M50 105c8 58 152 58 160 0"></path>
+      ${contents}
+      <path class="pic-line" d="M66 152h128"></path>
+    `);
+
+  const shirt = (fill, detail = "") =>
+    base(`
+      <path class="${fill}" d="M72 52l34-24h48l34 24 34 40-38 21-14-24v68H90V89l-14 24-38-21z"></path>
+      ${detail}
+      <path class="pic-line" d="M72 52l34-24h48l34 24 34 40-38 21-14-24v68H90V89l-14 24-38-21zM106 28c10 20 38 20 48 0"></path>
+    `);
+
+  const jacket = (fill, detail = "") =>
+    base(`
+      <path class="${fill}" d="M70 50l40-22h40l40 22 24 110h-62l-22-82-22 82H46z"></path>
+      ${detail}
+      <path class="pic-line" d="M70 50l40-22h40l40 22 24 110h-62l-22-82-22 82H46zM130 52v106M108 28l22 24 22-24"></path>
+    `);
+
+  const hoodie = (fill, detail = "") =>
+    base(`
+      <path class="${fill}" d="M84 70c0-42 92-42 92 0l34 33-36 26v34H86v-34l-36-26z"></path>
+      ${detail}
+      <path class="pic-line" d="M84 70c0-42 92-42 92 0M86 70v93h88V70M86 129l-36-26 34-33M174 129l36-26-34-33"></path>
+    `);
+
+  const vest = (fill, detail = "") =>
+    base(`
+      <path class="${fill}" d="M86 42l34-16h20l34 16 20 116h-50l-14-78-14 78H66z"></path>
+      <path class="pic-bg" d="M106 44c6 22 42 22 48 0l-24 38z"></path>
+      ${detail}
+      <path class="pic-line" d="M86 42l34-16h20l34 16 20 116h-50l-14-78-14 78H66zM130 82v76M106 44c6 22 42 22 48 0"></path>
+    `);
+
+  const pants = (fill, detail = "") =>
+    base(`
+      <path class="${fill}" d="M86 30h88l18 132h-50l-12-74-12 74H68z"></path>
+      ${detail}
+      <path class="pic-line" d="M86 30h88l18 132h-50l-12-74-12 74H68zM86 60h88M130 60v28"></path>
+    `);
+
+  const cards = {
+    meal: base(`
+      <circle class="pic-white" cx="105" cy="100" r="42"></circle>
+      <path class="pic-line" d="M63 100c0-24 84-24 84 0s-84 24-84 0M58 144h144"></path>
+      <path class="pic-warm" d="M166 68h48v68h-48z"></path>
+      <path class="pic-line" d="M166 68h48v68h-48M178 82h24M178 100h24M178 118h24"></path>
+    `),
+    bibimbap: bowl(
+      "pic-warm",
+      `<path class="pic-green" d="M82 88h34v34H82z"></path>
+       <path class="pic-blue" d="M118 78h26v48h-26z"></path>
+       <path class="pic-danger" d="M150 86h34v36h-34z"></path>
+       <circle class="pic-yellow" cx="130" cy="101" r="17"></circle>
+       <path class="pic-line" d="M82 88h34M118 78v48M150 86h34"></path>`,
+    ),
+    ramen: bowl(
+      "pic-danger",
+      `<path class="pic-line" d="M82 92c14-16 26 14 40 0s26 14 40 0 26 14 40 0"></path>`,
+      `<path class="pic-line" d="M92 44c-16 18 16 22 0 40M130 38c-16 18 16 22 0 40M168 44c-16 18 16 22 0 40"></path>`,
+    ),
+    udon: bowl(
+      "pic-blue",
+      `<path class="pic-line thick" d="M78 92c18-10 32 10 50 0s32 10 50 0M84 113h92"></path>
+       <circle class="pic-white" cx="180" cy="86" r="12"></circle>`,
+    ),
+    kimbap: base(`
+      <circle class="pic-white" cx="78" cy="102" r="34"></circle>
+      <circle class="pic-white" cx="130" cy="102" r="34"></circle>
+      <circle class="pic-white" cx="182" cy="102" r="34"></circle>
+      <path class="pic-green" d="M60 102a18 18 0 1 0 36 0 18 18 0 0 0-36 0M112 102a18 18 0 1 0 36 0 18 18 0 0 0-36 0M164 102a18 18 0 1 0 36 0 18 18 0 0 0-36 0"></path>
+      <path class="pic-yellow" d="M72 92h14v20H72zM124 92h14v20h-14zM176 92h14v20h-14z"></path>
+      <path class="pic-line" d="M78 68a34 34 0 1 0 0 68 34 34 0 0 0 0-68M130 68a34 34 0 1 0 0 68 34 34 0 0 0 0-68M182 68a34 34 0 1 0 0 68 34 34 0 0 0 0-68"></path>
+    `),
+    clothes: base(`
+      ${shirt("pic-green").match(/<rect[\s\S]*?<\/rect>([\s\S]*)<\/svg>/)?.[1] || ""}
+    `),
+    tshirtPlain: shirt("pic-green"),
+    tshirtGreen: shirt("pic-green"),
+    tshirtBlue: shirt("pic-blue"),
+    tshirtStripe: shirt("pic-white", `<path class="pic-line" d="M92 92h76M92 116h76M92 140h76"></path>`),
+    tshirtStar: shirt("pic-warm", `<path class="pic-line" d="M130 76l9 20 22 2-17 14 6 22-20-12-20 12 6-22-17-14 22-2z"></path>`),
+    jumper: jacket("pic-blue"),
+    jumperBlue: jacket("pic-blue"),
+    jumperZip: jacket("pic-blue", `<path class="pic-line" d="M121 68h18M121 88h18M121 108h18M121 128h18"></path>`),
+    jumperPocket: jacket("pic-blue", `<path class="pic-line" d="M88 112h30v30H88zM142 112h30v30h-30z"></path>`),
+    jumperWarm: jacket("pic-warm", `<path class="pic-white" d="M102 30c12 26 44 26 56 0l18 28c-20 18-72 18-92 0z"></path>`),
+    tracksuit: base(`
+      <path class="pic-green" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14z"></path>
+      <path class="pic-blue" d="M160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+      <path class="pic-line" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14zM160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+    `),
+    tracksuitGreen: base(`
+      <path class="pic-green" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14z"></path>
+      <path class="pic-green" d="M160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+      <path class="pic-line" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14zM160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+    `),
+    tracksuitBlue: base(`
+      <path class="pic-blue" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14z"></path>
+      <path class="pic-blue" d="M160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+      <path class="pic-line" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14zM160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+    `),
+    tracksuitLine: base(`
+      <path class="pic-blue" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14z"></path>
+      <path class="pic-blue" d="M160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+      <path class="pic-line" d="M76 52v64M116 52v64M174 50l-4 96M204 50l4 96M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14zM160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+    `),
+    tracksuitSet: base(`
+      <path class="pic-green" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14z"></path>
+      <path class="pic-green" d="M160 36h52l10 118h-32l-4-62-8 62h-32z"></path>
+      <circle class="pic-yellow" cx="130" cy="40" r="18"></circle>
+      <path class="pic-line" d="M54 50l26-18h34l26 18 20 30-30 14-8-16v42H72V78l-8 16-30-14zM160 36h52l10 118h-32l-4-62-8 62h-32zM122 40h16"></path>
+    `),
+    vest: vest("pic-warm"),
+    vestBlue: vest("pic-blue"),
+    vestPocket: vest("pic-blue", `<path class="pic-line" d="M90 112h28v28M142 112h28v28"></path>`),
+    vestWarm: vest("pic-warm"),
+    vestZip: vest("pic-blue", `<path class="pic-line" d="M122 68h16M122 88h16M122 108h16M122 128h16"></path>`),
+    hoodie: hoodie("pic-blue"),
+    hoodieGreen: hoodie("pic-green"),
+    hoodieBlue: hoodie("pic-blue"),
+    hoodiePocket: hoodie("pic-blue", `<path class="pic-line" d="M104 122h52v28h-52z"></path>`),
+    hoodieLine: hoodie("pic-blue", `<path class="pic-line" d="M118 76v42M142 76v42M118 118l-10 16M142 118l10 16"></path>`),
+    pants: pants("pic-blue"),
+    jeans: pants("pic-blue", `<path class="pic-line" d="M94 74h28M138 74h28M98 44v18M162 44v18"></path>`),
+    shorts: base(`
+      <path class="pic-warm" d="M82 48h96l16 78h-54l-10-42-10 42H66z"></path>
+      <path class="pic-line" d="M82 48h96l16 78h-54l-10-42-10 42H66zM82 72h96M130 72v18"></path>
+    `),
+    cargoPants: pants("pic-green", `<path class="pic-line" d="M78 96h36v34H78zM146 96h36v34h-36z"></path>`),
+    slacks: pants("pic-dark", `<path class="pic-line" d="M100 62l-12 92M160 62l12 92"></path>`),
+    seat: base(`
+      <rect class="pic-blue" x="84" y="38" width="92" height="68" rx="10"></rect>
+      <rect class="pic-warm" x="68" y="102" width="124" height="34" rx="10"></rect>
+      <path class="pic-line" d="M84 38h92v68H84zM68 102h124v34H68zM88 136v34M172 136v34"></path>
+    `),
+    chair: base(`
+      <rect class="pic-blue" x="84" y="38" width="92" height="68" rx="10"></rect>
+      <rect class="pic-warm" x="68" y="102" width="124" height="34" rx="10"></rect>
+      <path class="pic-line" d="M84 38h92v68H84zM68 102h124v34H68zM88 136v34M172 136v34"></path>
+    `),
+    sofa: base(`
+      <rect class="pic-blue" x="54" y="56" width="152" height="62" rx="18"></rect>
+      <rect class="pic-warm" x="40" y="104" width="180" height="42" rx="16"></rect>
+      <path class="pic-line" d="M54 104V74c0-10 8-18 18-18h116c10 0 18 8 18 18v30M40 104h180v42H40zM66 146v24M194 146v24"></path>
+    `),
+    mat: base(`
+      <path class="pic-warm" d="M48 74h156c20 0 34 14 34 34s-14 34-34 34H48z"></path>
+      <path class="pic-line" d="M48 74h156c20 0 34 14 34 34s-14 34-34 34H48zM48 74c24 12 24 56 0 68M88 74v68M130 74v68M172 74v68"></path>
+    `),
+    desk: base(`
+      <rect class="pic-warm" x="46" y="78" width="168" height="32" rx="6"></rect>
+      <rect class="pic-blue" x="78" y="38" width="62" height="40" rx="6"></rect>
+      <path class="pic-line" d="M46 78h168v32H46zM78 38h62v40H78zM70 110v58M190 110v58M94 58h28"></path>
+    `),
+    activity: base(`
+      <rect class="pic-white" x="60" y="42" width="96" height="96" rx="8"></rect>
+      <circle class="pic-yellow" cx="190" cy="70" r="20"></circle>
+      <path class="pic-line" d="M60 42h96v96H60zM78 116l22-28 18 18 20-30M176 120h28M190 98v44"></path>
+    `),
+    drawing: base(`
+      <rect class="pic-white" x="54" y="34" width="116" height="116" rx="8"></rect>
+      <path class="pic-line" d="M54 34h116v116H54zM76 120l24-30 18 18 20-28"></path>
+      <path class="pic-warm" d="M178 54l26 26-58 58-32 8 8-32z"></path>
+      <path class="pic-line" d="M178 54l26 26-58 58-32 8 8-32z"></path>
+    `),
+    music: base(`
+      <path class="pic-line" d="M86 108c0-26 18-48 44-48s44 22 44 48M78 106h26v42H78zM156 106h26v42h-26z"></path>
+      <path class="pic-blue" d="M78 106h26v42H78zM156 106h26v42h-26z"></path>
+    `),
+    walk: base(`
+      <circle class="skin" cx="116" cy="54" r="18"></circle>
+      <path class="pic-green" d="M88 130c2-36 16-56 28-56s26 20 30 56z"></path>
+      <path class="pic-line" d="M104 86l-28 28M132 86l32 28M104 128l-28 34M136 128l32 34M38 164h184M182 42h34M199 25v34"></path>
+    `),
+    game: base(`
+      <rect class="pic-blue" x="52" y="64" width="156" height="74" rx="30"></rect>
+      <path class="pic-line" d="M52 101c0-22 16-37 38-37h80c22 0 38 15 38 37s-16 37-38 37H90c-22 0-38-15-38-37zM82 101h36M100 83v36M158 94h1M184 108h1"></path>
+    `),
+    ask: base(`
+      ${person(78, 58)}
+      <rect class="pic-white" x="136" y="44" width="78" height="56" rx="14"></rect>
+      <path class="pic-line" d="M136 44h78v56h-34l-18 18v-18h-26zM158 70h34"></path>
+    `),
+    warning: base(`
+      ${person(80, 58)}
+      <path class="pic-warm" d="M182 38l58 104H124z"></path>
+      <path class="pic-line" d="M182 38l58 104H124zM182 72v34M182 128v1"></path>
+    `),
+    help: base(`
+      ${person(78, 58)}
+      <rect class="pic-blue" x="144" y="46" width="70" height="98" rx="16"></rect>
+      <path class="pic-line" d="M162 92h34M179 75v34M154 122h50"></path>
+    `),
+    shield: base(`
+      ${person(76, 58)}
+      <path class="pic-blue" d="M170 34l48 18v34c0 32-19 58-48 72-29-14-48-40-48-72V52z"></path>
+      <path class="pic-line" d="M170 34l48 18v34c0 32-19 58-48 72-29-14-48-40-48-72V52zM148 92l16 16 34-42"></path>
+    `),
+    respect: base(`
+      ${person(74, 58)}
+      ${person(184, 58, "shirt-b")}
+      <path class="pic-line" d="M108 112c24 20 50 20 74 0M118 86h24"></path>
+    `),
+  };
+
+  return cards[type] || cards.activity;
+}
+
+function illustration(name) {
+  const imageAssetAliases = {
+    pants: "jeans",
+  };
+
+  const imageAssets = new Set([
+    "activity",
+    "ansAskFirst",
+    "ansAskHelp",
+    "ansAskPermission",
+    "ansCutLine",
+    "ansDontFollow",
+    "ansFollowStranger",
+    "ansKeepTalking",
+    "ansNoPhoto",
+    "ansRespectNo",
+    "ansRunAway",
+    "ansSecretTake",
+    "ansSilentPhoto",
+    "ansStaySilent",
+    "ansStop",
+    "ansTellFamily",
+    "ansTellTeacher",
+    "ansUseNoAsk",
+    "ansWaitTurn",
+    "bibimbap",
+    "bread",
+    "cargoPants",
+    "chair",
+    "choiceMeal",
+    "clothes",
+    "cookie",
+    "danger",
+    "desk",
+    "dressShoes",
+    "drink",
+    "drawing",
+    "food",
+    "fruit",
+    "game",
+    "help",
+    "hoodie",
+    "hoodieBlue",
+    "hoodieGreen",
+    "hoodieLine",
+    "hoodiePocket",
+    "jeans",
+    "juice",
+    "jumper",
+    "jumperBlue",
+    "jumperPocket",
+    "jumperWarm",
+    "jumperZip",
+    "kimbap",
+    "mat",
+    "milk",
+    "music",
+    "noWear",
+    "personalItem",
+    "photoTaking",
+    "ramen",
+    "respect",
+    "safe",
+    "seat",
+    "shield",
+    "shoes",
+    "shorts",
+    "slacks",
+    "slippers",
+    "snack",
+    "sneakers",
+    "sofa",
+    "strangerCaution",
+    "tea",
+    "tracksuit",
+    "tracksuitBlue",
+    "tracksuitGreen",
+    "tracksuitLine",
+    "tracksuitSet",
+    "tshirt",
+    "tshirtBlue",
+    "tshirtGreen",
+    "tshirtStar",
+    "tshirtStripe",
+    "udon",
+    "vest",
+    "vestBlue",
+    "vestPocket",
+    "vestWarm",
+    "vestZip",
+    "walk",
+    "bodyBoundary",
+    "bodyTouch",
+    "friendTeasing",
+    "lostStreet",
+    "water",
+    "yogurt",
+  ]);
+
+  const imageAssetName = imageAssetAliases[name] || name;
+  if (imageAssets.has(imageAssetName)) {
+    return `<img class="card-image" src="./assets/cards/${imageAssetName}.jpg" alt="" aria-hidden="true" />`;
+  }
+
+  const clearPictograms = {
+    food: "meal",
+    bibimbap: "bibimbap",
+    ramen: "ramen",
+    udon: "udon",
+    kimbap: "kimbap",
+    clothes: "clothes",
+    tshirt: "tshirtPlain",
+    tshirtGreen: "tshirtGreen",
+    tshirtBlue: "tshirtBlue",
+    tshirtStripe: "tshirtStripe",
+    tshirtStar: "tshirtStar",
+    jumper: "jumper",
+    jumperBlue: "jumperBlue",
+    jumperZip: "jumperZip",
+    jumperPocket: "jumperPocket",
+    jumperWarm: "jumperWarm",
+    tracksuit: "tracksuit",
+    tracksuitGreen: "tracksuitGreen",
+    tracksuitBlue: "tracksuitBlue",
+    tracksuitLine: "tracksuitLine",
+    tracksuitSet: "tracksuitSet",
+    vest: "vest",
+    vestBlue: "vestBlue",
+    vestPocket: "vestPocket",
+    vestWarm: "vestWarm",
+    vestZip: "vestZip",
+    hoodie: "hoodie",
+    hoodieGreen: "hoodieGreen",
+    hoodieBlue: "hoodieBlue",
+    hoodiePocket: "hoodiePocket",
+    hoodieLine: "hoodieLine",
+    pants: "pants",
+    jeans: "jeans",
+    shorts: "shorts",
+    cargoPants: "cargoPants",
+    slacks: "slacks",
+    seat: "seat",
+    chair: "chair",
+    sofa: "sofa",
+    mat: "mat",
+    desk: "desk",
+    activity: "activity",
+    drawing: "drawing",
+    music: "music",
+    walk: "walk",
+    game: "game",
+    safe: "ask",
+    danger: "warning",
+    help: "help",
+    shield: "shield",
+    respect: "respect",
+  };
+
+  if (clearPictograms[name]) {
+    return pictogram(clearPictograms[name]);
+  }
+
+  const scenes = {
+    food: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        <rect class="soft" x="18" y="130" width="224" height="28" rx="10"></rect>
+        <ellipse class="line-fill" cx="158" cy="96" rx="64" ry="32"></ellipse>
+        <path class="warm" d="M106 92h104c-8 34-96 34-104 0z"></path>
+        <path class="line" d="M92 64h120M102 74h120M126 88c13-15 27 13 40 0s27 13 40 0M96 126h128"></path>
+        ${person(62, 58)}
+      </svg>
+    `,
+    clothes: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-a" d="M38 50l26-18h34l26 18 24 34-30 15-9-17v62H53V82l-9 17-30-15z"></path>
+        <path class="shirt-b" d="M152 44l28-15h32l28 15 16 96h-45l-15-58-15 58h-45z"></path>
+        <path class="line" d="M38 50l26-18h34l26 18 24 34-30 15-9-17v62H53V82l-9 17-30-15zM64 32c7 13 27 13 34 0M152 44l28-15h32l28 15 16 96h-45l-15-58-15 58h-45zM196 48v88"></path>
+      </svg>
+    `,
+    seat: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        <rect class="cool" x="130" y="54" width="74" height="64" rx="8"></rect>
+        <path class="line" d="M130 118h82M145 118v38M198 118v38"></path>
+        ${person(72, 58)}
+      </svg>
+    `,
+    activity: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        ${person(82, 56)}
+        <rect class="soft" x="142" y="46" width="84" height="76" rx="8"></rect>
+        <path class="line" d="M142 46h84v76h-84zM158 102l18-20 14 13 18-28M145 145h78"></path>
+        <circle class="warm" cx="208" cy="66" r="9"></circle>
+      </svg>
+    `,
+    safe: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        ${person(76, 56)}
+        ${person(184, 56, "shirt-b")}
+        <path class="line" d="M112 96h36M130 82v28"></path>
+        <path class="line" d="M132 42c12 6 18 14 18 25"></path>
+      </svg>
+    `,
+    danger: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        ${person(82, 58)}
+        <path class="warm" d="M182 36l58 102H124z"></path>
+        <path class="line" d="M182 66v34M182 124v1M182 36l58 102H124z"></path>
+      </svg>
+    `,
+    help: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        ${person(78, 58)}
+        <rect class="cool" x="142" y="42" width="72" height="96" rx="16"></rect>
+        <path class="line" d="M161 82h34M178 65v34M154 120h48"></path>
+      </svg>
+    `,
+    shield: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        ${person(76, 58)}
+        <path class="cool" d="M168 30l50 20v34c0 32-20 56-50 70-30-14-50-38-50-70V50z"></path>
+        <path class="line" d="M168 30l50 20v34c0 32-20 56-50 70-30-14-50-38-50-70V50zM145 86l15 15 32-38"></path>
+      </svg>
+    `,
+    respect: `
+      <svg class="illustration" viewBox="0 0 260 180" aria-hidden="true">
+        ${person(78, 58)}
+        ${person(180, 58, "shirt-b")}
+        <path class="line" d="M112 108c22 18 48 18 70 0M130 76h30"></path>
+      </svg>
+    `,
+    bibimbap: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <ellipse class="soft" cx="130" cy="112" rx="78" ry="38"></ellipse>
+        <ellipse class="line-fill" cx="130" cy="102" rx="72" ry="34"></ellipse>
+        <path class="warm" d="M94 92h72v20H94z"></path>
+        <path class="cool" d="M110 76h20v42h-20z"></path>
+        <path class="shirt-a" d="M142 76h20v42h-20z"></path>
+        <circle class="warm" cx="130" cy="96" r="17"></circle>
+        <path class="line" d="M58 132h144M94 92h72M110 76v42M142 76v42"></path>
+      </svg>
+    `,
+    ramen: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <ellipse class="line-fill" cx="130" cy="112" rx="76" ry="34"></ellipse>
+        <path class="warm" d="M72 106c10 44 106 44 116 0z"></path>
+        <path class="line" d="M66 104c0 46 128 46 128 0M66 104c0-22 128-22 128 0M90 88c12-16 28 16 40 0s28 16 40 0"></path>
+        <path class="line" d="M76 58h108M86 68h108"></path>
+      </svg>
+    `,
+    oldNoodles: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <ellipse class="line-fill" cx="130" cy="112" rx="76" ry="34"></ellipse>
+        <path class="soft" d="M70 106c10 44 110 44 120 0z"></path>
+        <path class="hair" d="M88 92c28-26 80-26 104 4-22 18-82 20-104-4z"></path>
+        <path class="line" d="M66 104c0 46 128 46 128 0M66 104c0-22 128-22 128 0M100 92c18 16 56 16 76 0"></path>
+      </svg>
+    `,
+    kimbap: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <rect class="soft" x="46" y="82" width="168" height="52" rx="26"></rect>
+        <circle class="line-fill" cx="80" cy="108" r="31"></circle>
+        <circle class="line-fill" cx="130" cy="108" r="31"></circle>
+        <circle class="line-fill" cx="180" cy="108" r="31"></circle>
+        <path class="warm" d="M70 100h20v16H70zM120 100h20v16h-20zM170 100h20v16h-20z"></path>
+        <path class="line" d="M46 108h168M80 77v62M130 77v62M180 77v62"></path>
+      </svg>
+    `,
+    tshirt: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-a" d="M78 48l30-20h44l30 20 30 38-35 18-12-22v66H95V82l-12 22-35-18z"></path>
+        <path class="line" d="M78 48l30-20h44l30 20 30 38-35 18-12-22v66H95V82l-12 22-35-18zM108 28c8 18 36 18 44 0"></path>
+      </svg>
+    `,
+    tshirtGreen: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-a" d="M72 48l34-22h48l34 22 32 38-36 20-14-22v66H90V84l-14 22-36-20z"></path>
+        <path class="line" d="M72 48l34-22h48l34 22 32 38-36 20-14-22v66H90V84l-14 22-36-20zM106 26c8 18 40 18 48 0"></path>
+      </svg>
+    `,
+    tshirtBlue: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M72 48l34-22h48l34 22 32 38-36 20-14-22v66H90V84l-14 22-36-20z"></path>
+        <path class="line" d="M72 48l34-22h48l34 22 32 38-36 20-14-22v66H90V84l-14 22-36-20zM106 26c8 18 40 18 48 0"></path>
+      </svg>
+    `,
+    tshirtStripe: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="soft" d="M72 48l34-22h48l34 22 32 38-36 20-14-22v66H90V84l-14 22-36-20z"></path>
+        <path class="line" d="M90 84h80M90 106h80M90 128h80M72 48l34-22h48l34 22 32 38-36 20-14-22v66H90V84l-14 22-36-20zM106 26c8 18 40 18 48 0"></path>
+      </svg>
+    `,
+    tshirtStar: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="warm" d="M72 48l34-22h48l34 22 32 38-36 20-14-22v66H90V84l-14 22-36-20z"></path>
+        <path class="line" d="M72 48l34-22h48l34 22 32 38-36 20-14-22v66H90V84l-14 22-36-20zM106 26c8 18 40 18 48 0M130 72l8 18 20 2-15 13 5 20-18-10-18 10 5-20-15-13 20-2z"></path>
+      </svg>
+    `,
+    jacket: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M78 46l34-18h36l34 18 20 98h-55l-17-72-17 72H58z"></path>
+        <path class="line" d="M78 46l34-18h36l34 18 20 98h-55l-17-72-17 72H58zM130 48v94M108 28l22 20 22-20"></path>
+      </svg>
+    `,
+    jacketBlue: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M76 42l36-16h36l36 16 24 104h-58l-20-78-20 78H52z"></path>
+        <path class="line" d="M76 42l36-16h36l36 16 24 104h-58l-20-78-20 78H52zM130 48v96M112 26l18 22 18-22"></path>
+      </svg>
+    `,
+    jacketPocket: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M76 42l36-16h36l36 16 24 104h-58l-20-78-20 78H52z"></path>
+        <path class="line" d="M76 42l36-16h36l36 16 24 104h-58l-20-78-20 78H52zM130 48v96M92 102h28v26H92zM140 102h28v26h-28z"></path>
+      </svg>
+    `,
+    jacketZip: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="cool" d="M76 42l36-16h36l36 16 24 104h-58l-20-78-20 78H52z"></path>
+        <path class="line" d="M76 42l36-16h36l36 16 24 104h-58l-20-78-20 78H52zM130 48v96M122 66h16M122 84h16M122 102h16M122 120h16"></path>
+      </svg>
+    `,
+    jacketWarm: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="warm" d="M70 48l40-22h40l40 22 22 98h-164z"></path>
+        <path class="soft" d="M104 28c10 24 42 24 52 0l14 24c-18 16-62 16-80 0z"></path>
+        <path class="line" d="M70 48l40-22h40l40 22 22 98h-164zM104 28c10 24 42 24 52 0M130 62v82"></path>
+      </svg>
+    `,
+    hoodie: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="cool" d="M92 62c0-28 76-28 76 0l28 28-28 24v36H92v-36L64 90z"></path>
+        <path class="line" d="M92 62c0-28 76-28 76 0M92 62v88h76V62M92 114L64 90l28-28M168 114l28-24-28-28M112 118h36"></path>
+      </svg>
+    `,
+    hoodieGreen: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-a" d="M88 62c0-34 84-34 84 0l30 30-32 24v36H90v-36L58 92z"></path>
+        <path class="line" d="M88 62c0-34 84-34 84 0M90 116L58 92l30-30M170 116l32-24-30-30M90 62v90h80V62M112 124h36"></path>
+      </svg>
+    `,
+    hoodieBlue: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M88 62c0-34 84-34 84 0l30 30-32 24v36H90v-36L58 92z"></path>
+        <path class="line" d="M88 62c0-34 84-34 84 0M90 116L58 92l30-30M170 116l32-24-30-30M90 62v90h80V62M112 124h36"></path>
+      </svg>
+    `,
+    hoodiePocket: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="cool" d="M88 62c0-34 84-34 84 0l30 30-32 24v36H90v-36L58 92z"></path>
+        <path class="line" d="M88 62c0-34 84-34 84 0M90 62v90h80V62M104 112h52v28h-52zM112 124h36"></path>
+      </svg>
+    `,
+    hoodieLine: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="cool" d="M88 62c0-34 84-34 84 0l30 30-32 24v36H90v-36L58 92z"></path>
+        <path class="line" d="M88 62c0-34 84-34 84 0M90 62v90h80V62M118 72v42M142 72v42M118 114l-8 12M142 114l8 12"></path>
+      </svg>
+    `,
+    pants: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M92 32h76l14 120h-42l-10-66-10 66H78z"></path>
+        <path class="line" d="M92 32h76l14 120h-42l-10-66-10 66H78zM92 58h76M130 58v28"></path>
+      </svg>
+    `,
+    pantsBlue: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M88 28h84l16 128h-48l-10-72-10 72H72z"></path>
+        <path class="line" d="M88 28h84l16 128h-48l-10-72-10 72H72zM88 58h84M130 58v28"></path>
+      </svg>
+    `,
+    pantsShort: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M84 40h92l12 76h-50l-8-38-8 38H72z"></path>
+        <path class="line" d="M84 40h92l12 76h-50l-8-38-8 38H72zM84 64h92M130 64v18"></path>
+      </svg>
+    `,
+    pantsPocket: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M88 28h84l16 128h-48l-10-72-10 72H72z"></path>
+        <path class="line" d="M88 28h84l16 128h-48l-10-72-10 72H72zM94 70h24v24M142 70h24v24M130 58v28"></path>
+      </svg>
+    `,
+    pantsLine: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="shirt-b" d="M88 28h84l16 128h-48l-10-72-10 72H72z"></path>
+        <path class="line" d="M88 28h84l16 128h-48l-10-72-10 72H72zM108 62l-12 88M152 62l12 88M130 58v28"></path>
+      </svg>
+    `,
+    chair: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <rect class="cool" x="84" y="38" width="92" height="70" rx="10"></rect>
+        <rect class="soft" x="70" y="104" width="120" height="32" rx="10"></rect>
+        <path class="line" d="M84 38h92v70H84zM70 104h120M86 136v28M174 136v28"></path>
+      </svg>
+    `,
+    sofa: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <rect class="soft" x="44" y="72" width="172" height="58" rx="18"></rect>
+        <rect class="cool" x="58" y="46" width="144" height="54" rx="18"></rect>
+        <path class="line" d="M58 100V64c0-10 8-18 18-18h108c10 0 18 8 18 18v36M44 100h172v30H44zM70 130v24M190 130v24"></path>
+      </svg>
+    `,
+    mat: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="soft" d="M54 62h152c18 0 30 12 30 30s-12 30-30 30H54z"></path>
+        <path class="line" d="M54 62h152c18 0 30 12 30 30s-12 30-30 30H54zM54 62c20 10 20 50 0 60M92 62v60M130 62v60M168 62v60"></path>
+      </svg>
+    `,
+    desk: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <rect class="warm" x="50" y="76" width="160" height="28" rx="6"></rect>
+        <rect class="cool" x="72" y="40" width="62" height="36" rx="6"></rect>
+        <path class="line" d="M50 76h160v28H50zM72 40h62v36H72zM70 104v52M190 104v52M92 58h22"></path>
+      </svg>
+    `,
+    drawing: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <rect class="soft" x="60" y="36" width="112" height="112" rx="8"></rect>
+        <path class="line" d="M60 36h112v112H60zM84 116l26-28 18 18 16-22 18 32"></path>
+        <path class="warm" d="M178 54l22 22-54 54-28 8 8-28z"></path>
+        <path class="line" d="M178 54l22 22-54 54-28 8 8-28z"></path>
+      </svg>
+    `,
+    music: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <path class="line" d="M118 42v76M118 42l70-14v76M86 122c0-14 32-14 32 0s-32 14-32 0M156 108c0-14 32-14 32 0s-32 14-32 0"></path>
+        <path class="cool" d="M118 42l70-14v26l-70 14z"></path>
+      </svg>
+    `,
+    walk: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        ${person(118, 50)}
+        <path class="line" d="M102 122l-26 32M134 122l34 30M36 154h188"></path>
+        <circle class="warm" cx="190" cy="48" r="20"></circle>
+      </svg>
+    `,
+    game: `
+      <svg class="illustration item-art" viewBox="0 0 260 180" aria-hidden="true">
+        <rect class="cool" x="50" y="66" width="160" height="70" rx="28"></rect>
+        <path class="line" d="M50 100c0-20 16-34 36-34h88c20 0 36 14 36 34s-16 36-36 36H86c-20 0-36-16-36-36zM82 100h34M99 83v34M156 96h1M184 108h1"></path>
+      </svg>
+    `,
+  };
+
+  return scenes[name];
+}
+
+function answerVisual(text, kind = "") {
+  const visualByText = {
+    "제가 이거 써 봐도 될까요?": "ansAskPermission",
+    "묻지 않고 쓴다": "ansUseNoAsk",
+    "몰래 가져간다": "ansSecretTake",
+    "선생님에게 말해요": "ansTellTeacher",
+    "가족에게 말해요": "ansTellFamily",
+    "상대에게 하지 말라고 말해요": "ansStop",
+    "혼자 참아요": "ansStaySilent",
+    "도와주세요": "ansAskHelp",
+    "그냥 뛰어가요": "ansRunAway",
+    "아무에게나 따라가요": "ansFollowStranger",
+    "따라가지 않아요": "ansDontFollow",
+    "그냥 따라가요": "ansFollowStranger",
+    "찍지 마세요": "ansNoPhoto",
+    "싫어도 참아요": "ansSilentPhoto",
+    "안 돼요": "ansStop",
+    "먼저 물어봐요": "ansAskPermission",
+    "싫어요": "ansStop",
+    "하지 마세요": "ansStop",
+    "선생님께 말할래요": "ansTellTeacher",
+    "알겠어": "ansRespectNo",
+    "멈출게요": "ansRespectNo",
+    "계속 말해요": "ansKeepTalking",
+    "기다릴게요": "ansWaitTurn",
+    "먼저 해도 될까요?": "ansAskFirst",
+    "세치기": "ansCutLine",
+    "그냥 지켜봐요": "ansStaySilent",
+    "그냥 참아요": "ansStaySilent",
+  };
+
+  const visualKey = visualByText[text] || (kind === "danger" ? "danger" : kind === "help" ? "help" : "respect");
+  return `<span class="answer-visual">${illustration(visualKey)}</span>`;
+}
+
+function speak(text) {
+  if (!("speechSynthesis" in window)) {
+    feedback.textContent = "읽어주기를 사용할 수 없어요.";
+    return;
+  }
+
+  try {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "ko-KR";
+    utterance.rate = 0.86;
+    utterance.onerror = () => {
+      feedback.textContent = "읽어주기에 실패했어요.";
+    };
+    window.speechSynthesis.speak(utterance);
+  } catch {
+    feedback.textContent = "읽어주기에 실패했어요.";
+  }
+}
+
+function readButton(text) {
+  return `<button class="listen" data-speak="${text}" type="button" aria-label="읽어주기">듣기</button>`;
+}
+
+function addRecord(text) {
+  const time = new Date().toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  records.unshift(`${time} - ${text}`);
+}
+
+function showCelebration(label = "좋아요", tone = "positive") {
+  celebration.querySelector(".celebration-mark").textContent = label;
+  celebration.classList.remove("show", "warn");
+  if (tone === "warning") celebration.classList.add("warn");
+  window.requestAnimationFrame(() => celebration.classList.add("show"));
+}
+
+function playWarningTone() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.type = "square";
+    oscillator.frequency.setValueAtTime(220, context.currentTime);
+    gain.gain.setValueAtTime(0.001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.001, context.currentTime + 0.28);
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.3);
+  } catch {
+    // Audio feedback is optional; visual feedback still works.
+  }
+}
+
+function setFeedback(message, label = "좋아요", tone = "positive") {
+  feedback.textContent = message;
+  showCelebration(label, tone);
+  if (tone === "warning") playWarningTone();
+  window.clearTimeout(setFeedback.timer);
+  setFeedback.timer = window.setTimeout(() => {
+    feedback.textContent = "";
+  }, 2400);
+}
+
+function updateCounts() {
+  document.querySelector("#choiceCount").textContent = counts.choice;
+  document.querySelector("#expressionCount").textContent = counts.expression;
+  document.querySelector("#helpCount").textContent = counts.help;
+  document.querySelector("#respectCount").textContent = counts.respect;
+}
+
+function getActiveChoiceSteps() {
+  if (!state.choiceFlow) return [];
+  return state.choiceFlow.type === "food" ? foodFlowSteps : clothesFlowSteps;
+}
+
+function renderChoiceSummary() {
+  const isFood = state.choiceFlow.type === "food";
+  const title = isFood ? "내가 고른 음식이에요" : "내가 고른 것이에요";
+  const actionText = isFood ? "다른 것도 골라볼래요" : "다시 처음으로";
+  focusWord.textContent = "선택";
+  stage.innerHTML = `
+    <div class="activity-title">
+      <h2>${title}</h2>
+      <p class="prompt">내가 스스로 골랐어요.</p>
+      ${readButton(`${title}. 내가 스스로 골랐어요.`)}
+    </div>
+    <div class="card-grid summary-grid">
+      ${state.choiceFlow.picks
+        .filter((pick) => !pick.skip)
+        .map(
+          (pick) => `
+            <article class="big-card summary-card">
+              ${illustration(pick.key)}
+              <strong>${pick.title}</strong>
+              <span>${pick.label}</span>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+    <button class="back-button" data-choice-reset type="button">${actionText}</button>
+  `;
+  stage.appendChild(feedback);
+}
+
+function renderChoiceFlow() {
+  const steps = getActiveChoiceSteps();
+  if (state.choiceFlow.step >= steps.length) {
+    renderChoiceSummary();
+    return;
+  }
+
+  const step = steps[state.choiceFlow.step];
+  focusWord.textContent = "선택";
+  stage.innerHTML = `
+    <div class="activity-title">
+      <h2>${step.title}</h2>
+      <p class="prompt">${step.prompt}</p>
+      ${readButton(`${step.title}. ${step.prompt}`)}
+    </div>
+    <div class="card-grid ${state.mode === "easy" ? "two" : ""}">
+      ${step.options
+        .map(
+          (card) => `
+            <button class="big-card" data-flow-option="${card.key}" data-speak="${card.speak}" type="button">
+              ${illustration(card.key)}
+              <strong>${card.title}</strong>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+  stage.appendChild(feedback);
+}
+
+function renderChoice() {
+  if (state.choiceFlow) {
+    renderChoiceFlow();
+    return;
+  }
+
+  const selectedCategory = choiceCategories.find((category) => category.key === state.choiceCategory);
+  if (selectedCategory) {
+    focusWord.textContent = "선택";
+    stage.innerHTML = `
+      <div class="activity-title">
+        <h2>${selectedCategory.title} 고르기</h2>
+        <p class="prompt">${selectedCategory.key === "activity" ? "하고 싶은 말을 골라요." : "하나를 골라요."}</p>
+        ${readButton(`${selectedCategory.title} 고르기. 하나를 골라요.`)}
+      </div>
+      <div class="card-grid ${state.mode === "easy" ? "two" : ""}">
+        ${selectedCategory.options
+          .map(
+            (card) => `
+              <button class="big-card" data-choice-option="${card.key}" data-speak="${card.speak}" type="button">
+                ${illustration(card.key)}
+                <strong>${card.title}</strong>
+              </button>
+            `,
+          )
+          .join("")}
+      </div>
+      ${selectedCategory.note ? `<p class="choice-note">${selectedCategory.note}</p>` : ""}
+      <button class="back-button" data-choice-back type="button">종류 다시 고르기</button>
+    `;
+    stage.appendChild(feedback);
+    return;
+  }
+
+  focusWord.textContent = "선택";
+  stage.innerHTML = `
+    <div class="activity-title">
+      <h2>무엇을 고를까요?</h2>
+      <p class="prompt">먼저 종류를 골라요.</p>
+      ${readButton("먼저 종류를 골라요.")}
+    </div>
+    <div class="card-grid ${state.mode === "easy" ? "two" : ""}">
+      ${choiceCategories
+        .map(
+          (card) => `
+            <button class="big-card" data-choice-category="${card.key}" data-choice-title="${card.title}" data-speak="${card.title}. ${card.text}" type="button">
+              ${illustration(card.key)}
+              <strong>${card.title}</strong>
+              ${state.mode === "easy" ? "" : `<span>${card.text}</span>`}
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+  stage.appendChild(feedback);
+}
+
+function renderCompletion(title, message) {
+  focusWord.textContent = "완료";
+  stage.innerHTML = `
+    <div class="activity-title">
+      <h2>${title}</h2>
+      <p class="prompt">학습을 완료하였습니다.</p>
+      ${readButton(`${title}. 학습을 완료하였습니다.`)}
+    </div>
+    <div class="scene completion">
+      <div class="scene-art">${illustration("respect")}</div>
+      <div class="scene-copy">
+        <strong>잘 연습했어요</strong>
+        <p>${message}</p>
+      </div>
+    </div>
+  `;
+  stage.appendChild(feedback);
+}
+
+function renderSafety() {
+  if (state.index >= safetyScenes.length) {
+    renderCompletion("생활 안전 고르기", "괜찮은 상황, 불편한 상황, 도움이 필요한 상황을 골라 보았어요.");
+    return;
+  }
+
+  const scene = safetyScenes[state.index];
+  const sceneText = scene[state.mode];
+  const isLastScene = state.index === safetyScenes.length - 1;
+  focusWord.textContent = scene.key === "permission" || scene.key === "photoTaking" ? "존중" : "안전";
+  stage.innerHTML = `
+    <div class="activity-title">
+      <h2>생활 안전 고르기</h2>
+      <p class="prompt">${isLastScene ? "다음 카드를 누르면 학습을 완료합니다." : state.mode === "easy" ? "골라요." : "어떻게 하면 좋을까요?"}</p>
+      ${readButton(`${scene.title}. ${sceneText}`)}
+    </div>
+    <div class="scene">
+      <div class="scene-art">${illustration(scene.imageKey || scene.key)}</div>
+      <div class="scene-copy">
+        <strong>${scene.title}</strong>
+        <p>${sceneText}</p>
+        ${state.mode === "story" ? `<div class="story-question">${scene.question}</div>` : ""}
+      </div>
+    </div>
+    <div class="answers">
+      ${scene.answers
+        .map(
+          (answer) =>
+            `<button class="pill answer-card ${answer.kind}" data-safety="${answer.kind}" data-correct="${answer.correct}" data-answer="${answer.text}" type="button">
+              <span class="answer-text">${answer.text}</span>
+              ${answerVisual(answer.text, answer.kind)}
+            </button>`,
+        )
+        .join("")}
+    </div>
+    ${state.safetyAnswer ? `<div class="correct-answer ${state.safetyAnswer.correct ? "ok" : "retry"}">${scene.answerText}</div>` : ""}
+  `;
+  stage.appendChild(feedback);
+}
+
+function renderShield() {
+  if (state.index >= shieldScenes.length) {
+    renderCompletion("싫어요·도와주세요 연습", "싫을 때 말하기, 도움 요청하기, 친구의 말 존중하기를 연습했어요.");
+    return;
+  }
+
+  const scene = shieldScenes[state.index];
+  const sceneText = state.mode === "easy" ? scene.easy : scene.text;
+  const isLastScene = state.index === shieldScenes.length - 1;
+  focusWord.textContent = scene.key === "respect" ? "존중" : "도움";
+  state.bellTaps = 0;
+  stage.innerHTML = `
+    <div class="activity-title">
+      <h2>싫어요·도와주세요 연습</h2>
+      <p class="prompt">${isLastScene ? "다음 카드를 누르면 학습을 완료합니다." : state.mode === "easy" ? "말해요." : "필요한 말을 골라요."}</p>
+      ${readButton(`${scene.title}. ${sceneText}`)}
+    </div>
+    <div class="scene">
+      <div class="scene-art">${illustration(scene.key)}</div>
+      <div class="scene-copy">
+        ${state.mode === "easy" ? "" : `<strong>${scene.title}</strong>`}
+        <p>${sceneText}</p>
+        ${state.mode === "story" ? `<div class="story-question">${scene.question}</div>` : ""}
+      </div>
+    </div>
+    <div class="answers four">
+      ${scene.answers
+        .map((answer) => (typeof answer === "string" ? { text: answer, correct: true } : answer))
+        .map(
+          (answer) =>
+            `<button class="pill answer-card ${answer.correct ? (scene.key === "respect" ? "respect" : "help") : "danger"}" data-shield="${answer.text}" data-correct="${answer.correct}" type="button">
+              <span class="answer-text">${answer.text}</span>
+              ${answerVisual(answer.text, answer.correct ? (scene.key === "respect" ? "respect" : "help") : "danger")}
+            </button>`,
+        )
+        .join("")}
+    </div>
+    ${
+      scene.key === "respect"
+        ? ""
+        : `<div class="help-practice" data-help-practice>
+            <button class="bell" data-help-bell type="button">도움 벨</button>
+            <div class="gauge" aria-label="도움 요청 연습 게이지">
+              <div class="gauge-fill" data-gauge-fill></div>
+            </div>
+          </div>`
+    }
+  `;
+  stage.appendChild(feedback);
+}
+
+function render() {
+  if (state.activity === "choice") renderChoice();
+  if (state.activity === "safety") renderSafety();
+  if (state.activity === "shield") renderShield();
+  updateFacilitator();
+}
+
+function updatePressedState(selector, activeElement) {
+  document.querySelectorAll(selector).forEach((item) => {
+    item.setAttribute("aria-pressed", item === activeElement ? "true" : "false");
+  });
+}
+
+function updateFacilitator() {
+  const isChoice = state.activity === "choice";
+  const isSafetyComplete = state.activity === "safety" && state.index >= safetyScenes.length;
+  const isShieldComplete = state.activity === "shield" && state.index >= shieldScenes.length;
+  const isComplete = isSafetyComplete || isShieldComplete;
+
+  facilitator.hidden = isChoice;
+  acceptExpressionButton.hidden = isChoice;
+  prevCardButton.hidden = isChoice || isComplete;
+  nextCardButton.hidden = isChoice;
+  nextCardButton.textContent = isComplete ? "처음으로" : "다음 카드";
+}
+
+document.querySelector(".segmented").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-activity]");
+  if (!button) return;
+  state.activity = button.dataset.activity;
+  state.index = 0;
+  state.safetyAnswer = null;
+  state.choiceCategory = null;
+  state.choiceSubcategory = null;
+  state.choiceFlow = null;
+  document.querySelectorAll("[data-activity]").forEach((item) => item.classList.toggle("active", item === button));
+  updatePressedState("[data-activity]", button);
+  render();
+});
+
+document.querySelector(".mode-switch").addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-mode]");
+  if (!button) return;
+  state.mode = button.dataset.mode;
+  state.safetyAnswer = null;
+  state.choiceCategory = null;
+  state.choiceSubcategory = null;
+  state.choiceFlow = null;
+  document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", item === button));
+  updatePressedState("[data-mode]", button);
+  render();
+});
+
+stage.addEventListener("click", (event) => {
+  if (interactionLocked) return;
+
+  const speaker = event.target.closest("[data-speak]");
+  const choiceCategory = event.target.closest("[data-choice-category]");
+  const choiceSubcategory = event.target.closest("[data-choice-subcategory]");
+  const choiceOption = event.target.closest("[data-choice-option]");
+  const flowOption = event.target.closest("[data-flow-option]");
+  const choiceBack = event.target.closest("[data-choice-back]");
+  const choiceReset = event.target.closest("[data-choice-reset]");
+  const safety = event.target.closest("[data-safety]");
+  const shield = event.target.closest("[data-shield]");
+  const helpBell = event.target.closest("[data-help-bell]");
+
+  if (speaker && !choiceCategory && !choiceSubcategory && !choiceOption && !flowOption) {
+    speak(speaker.dataset.speak);
+    return;
+  }
+
+  if (helpBell) {
+    lockInteraction(260);
+    const practice = helpBell.closest("[data-help-practice]");
+    if (practice.dataset.complete === "true") return;
+    state.bellTaps += 1;
+    const progress = Math.min(state.bellTaps, 3) * 33.34;
+    practice.querySelector("[data-gauge-fill]").style.width = `${progress}%`;
+    speak("도와주세요");
+    if (state.bellTaps >= 3) {
+      practice.dataset.complete = "true";
+      counts.help += 1;
+      counts.expression += 1;
+      addRecord("도움 벨 3번 누르기");
+      setFeedback("도움을 요청했어요.");
+      updateCounts();
+    }
+    return;
+  }
+
+  if (choiceReset) {
+    state.choiceFlow = null;
+    state.choiceCategory = null;
+    state.choiceSubcategory = null;
+    renderChoice();
+    return;
+  }
+
+  if (choiceCategory) {
+    lockInteraction();
+    const categoryKey = choiceCategory.dataset.choiceCategory;
+    if (categoryKey === "food" || categoryKey === "clothes") {
+      state.choiceFlow = { type: categoryKey, step: 0, picks: [] };
+      state.choiceCategory = null;
+      state.choiceSubcategory = null;
+      speak(choiceCategory.dataset.speak);
+      addRecord(`선택 종류: ${choiceCategory.dataset.choiceTitle}`);
+      renderChoice();
+      return;
+    }
+
+    state.choiceCategory = categoryKey;
+    state.choiceSubcategory = null;
+    speak(choiceCategory.dataset.speak);
+    addRecord(`선택 종류: ${choiceCategory.dataset.choiceTitle}`);
+    renderChoice();
+    return;
+  }
+
+  if (choiceSubcategory) {
+    lockInteraction();
+    state.choiceSubcategory = choiceSubcategory.dataset.choiceSubcategory;
+    speak(choiceSubcategory.dataset.speak);
+    addRecord(`옷 종류: ${choiceSubcategory.dataset.choiceTitle}`);
+    renderChoice();
+    return;
+  }
+
+  if (choiceBack) {
+    state.choiceCategory = null;
+    state.choiceSubcategory = null;
+    renderChoice();
+    return;
+  }
+
+  if (flowOption) {
+    lockInteraction();
+    const steps = getActiveChoiceSteps();
+    const step = steps[state.choiceFlow.step];
+    const option = step.options.find((item) => item.key === flowOption.dataset.flowOption);
+    if (!option) return;
+
+    state.choiceFlow.picks.push({
+      key: option.skip ? "noWear" : option.key,
+      title: option.title,
+      label: step.resultLabel,
+      skip: Boolean(option.skip),
+    });
+    counts.choice += 1;
+    counts.expression += 1;
+    speak(option.speak);
+    addRecord(`${step.resultLabel}: ${option.title}`);
+    setFeedback(`${option.title} 선택`);
+    state.choiceFlow.step += 1;
+    updateCounts();
+    renderChoice();
+    return;
+  }
+
+  if (choiceOption) {
+    lockInteraction();
+    document.querySelectorAll(".big-card").forEach((card) => card.classList.remove("selected"));
+    choiceOption.classList.add("selected");
+    counts.choice += 1;
+    counts.expression += 1;
+    speak(choiceOption.dataset.speak);
+    const selectedCategory = choiceCategories.find((category) => category.key === state.choiceCategory);
+    const selectedOption = selectedCategory?.options.find((option) => option.key === choiceOption.dataset.choiceOption);
+    const selectedTitle = selectedOption?.title || "선택";
+    addRecord(`${selectedTitle} 선택`);
+    setFeedback(`${selectedTitle}을 골랐어요.`);
+  }
+
+  if (safety) {
+    lockInteraction();
+    const answerText = safety.dataset.answer;
+    const isCorrect = safety.dataset.correct === "true";
+    counts.expression += 1;
+    if (isCorrect && safety.dataset.safety === "help") counts.help += 1;
+    if (isCorrect && safety.dataset.safety === "respect") counts.respect += 1;
+    if (isCorrect && safety.dataset.safety === "safe") counts.respect += 1;
+    speak(answerText);
+    addRecord(`생활 안전: ${answerText}`);
+    state.safetyAnswer = { correct: isCorrect, text: answerText };
+    setFeedback(isCorrect ? "좋은 방법이에요." : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
+    renderSafety();
+  }
+
+  if (shield) {
+    lockInteraction();
+    const isCorrect = shield.dataset.correct !== "false";
+    counts.expression += 1;
+    if (isCorrect && ["도와주세요", "싫어요", "안 돼요", "하지 마세요", "찍지 마세요", "선생님께 말할래요"].includes(shield.dataset.shield)) counts.help += 1;
+    if (isCorrect && ["먼저 물어봐요", "알겠어", "멈출게요", "기다릴게요", "먼저 해도 될까요?"].includes(shield.dataset.shield)) counts.respect += 1;
+    speak(shield.dataset.shield);
+    addRecord(`말하기 연습: ${shield.dataset.shield}`);
+    setFeedback(isCorrect ? `${shield.dataset.shield}.` : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
+  }
+
+  updateCounts();
+});
+
+acceptExpressionButton.addEventListener("click", () => {
+  expressionModal.hidden = false;
+});
+
+document.querySelector("#closeExpressionModal").addEventListener("click", () => {
+  expressionModal.hidden = true;
+  acceptExpressionButton.focus();
+});
+
+expressionModal.addEventListener("click", (event) => {
+  const method = event.target.closest("[data-expression-method]");
+  if (!method) return;
+  counts.expression += 1;
+  addRecord(`표현 방식: ${method.dataset.expressionMethod}`);
+  expressionModal.hidden = true;
+  acceptExpressionButton.focus();
+  setFeedback(`${method.dataset.expressionMethod}으로 표현했어요.`);
+  updateCounts();
+});
+
+prevCardButton.addEventListener("click", () => {
+  if (state.activity !== "safety" && state.activity !== "shield") return;
+  state.index = Math.max(0, state.index - 1);
+  state.safetyAnswer = null;
+  render();
+});
+
+nextCardButton.addEventListener("click", () => {
+  if (state.activity === "safety" && state.index >= safetyScenes.length) {
+    state.index = 0;
+    state.safetyAnswer = null;
+    render();
+    return;
+  }
+
+  if (state.activity === "shield" && state.index >= shieldScenes.length) {
+    state.index = 0;
+    render();
+    return;
+  }
+
+  state.index += 1;
+  state.safetyAnswer = null;
+  render();
+});
+
+document.querySelector("#resetRecord").addEventListener("click", () => {
+  Object.keys(counts).forEach((key) => {
+    counts[key] = 0;
+  });
+  records.length = 0;
+  state.index = 0;
+  state.safetyAnswer = null;
+  state.choiceCategory = null;
+  state.choiceSubcategory = null;
+  state.choiceFlow = null;
+  updateCounts();
+  render();
+});
+
+document.querySelector("#showLog").addEventListener("click", () => {
+  logList.innerHTML = records.length
+    ? records.map((record) => `<li>${record}</li>`).join("")
+    : "<li>아직 기록이 없어요.</li>";
+  logModal.hidden = false;
+});
+
+document.querySelector("#closeLogModal").addEventListener("click", () => {
+  logModal.hidden = true;
+});
+
+document.querySelector("#printLog").addEventListener("click", () => {
+  window.print();
+});
+
+render();
+updateCounts();

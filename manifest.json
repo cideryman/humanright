@@ -1,0 +1,20 @@
+{
+  "name": "내가 골라요 - 인권 활동판",
+  "short_name": "내가 골라요",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#fffdf7",
+  "theme_color": "#0f766e",
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

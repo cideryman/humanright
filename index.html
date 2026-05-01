@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f766e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>내가 골라요 - 인권 활동판</title>
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">함께 하는 인권 활동</p>
+          <h1>내가 골라요</h1>
+        </div>
+        <div class="focus-card" aria-live="polite">
+          <span>오늘의 말</span>
+          <strong id="focusWord">선택</strong>
+        </div>
+      </header>
+
+      <section class="controls" aria-label="진행 설정">
+        <div class="segmented" role="tablist" aria-label="활동 고르기">
+          <button class="active" data-activity="choice" type="button" aria-pressed="true">내가 골라요</button>
+          <button data-activity="safety" type="button" aria-pressed="false">생활 안전</button>
+          <button data-activity="shield" type="button" aria-pressed="false">말하기 연습</button>
+        </div>
+        <div class="mode-switch" aria-label="난이도 고르기">
+          <button class="active" data-mode="visual" type="button" aria-pressed="true">그림+말</button>
+          <button data-mode="story" type="button" aria-pressed="false">이야기</button>
+        </div>
+      </section>
+
+      <section class="stage" id="stage" aria-live="polite"></section>
+
+      <section class="facilitator">
+        <button class="ghost" id="acceptExpression" type="button">표현했어요</button>
+        <button class="ghost" id="prevCard" type="button">이전 카드</button>
+        <button class="primary" id="nextCard" type="button">다음 카드</button>
+      </section>
+
+      <aside class="record" aria-label="오늘의 활동 기록">
+        <article>
+          <span>스스로 고른 것</span>
+          <strong id="choiceCount">0</strong>
+        </article>
+        <article>
+          <span>생각을 표현한 것</span>
+          <strong id="expressionCount">0</strong>
+        </article>
+        <article>
+          <span>도움을 요청한 것</span>
+          <strong id="helpCount">0</strong>
+        </article>
+        <article>
+          <span>존중을 연습한 것</span>
+          <strong id="respectCount">0</strong>
+        </article>
+        <button id="showLog" type="button">기록 보기</button>
+        <button id="resetRecord" type="button">처음으로</button>
+      </aside>
+    </main>
+
+    <div class="celebration" id="celebration" aria-hidden="true">
+      <div class="celebration-mark">좋아요</div>
+    </div>
+
+    <div class="modal" id="expressionModal" role="dialog" aria-modal="true" aria-labelledby="expressionTitle" hidden>
+      <div class="modal-panel">
+        <h2 id="expressionTitle">어떻게 표현했나요?</h2>
+        <div class="modal-options">
+          <button data-expression-method="말" type="button">말</button>
+          <button data-expression-method="손짓" type="button">손짓</button>
+          <button data-expression-method="표정" type="button">표정</button>
+          <button data-expression-method="카드 선택" type="button">카드 선택</button>
+        </div>
+        <button class="modal-close" id="closeExpressionModal" type="button">닫기</button>
+      </div>
+    </div>
+
+    <div class="modal" id="logModal" role="dialog" aria-modal="true" aria-labelledby="logTitle" hidden>
+      <div class="modal-panel wide">
+        <h2 id="logTitle">오늘의 관찰 기록</h2>
+        <ol id="logList" class="log-list"></ol>
+        <div class="modal-actions">
+          <button id="printLog" type="button">인쇄 / PDF 저장</button>
+          <button class="modal-close" id="closeLogModal" type="button">닫기</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./script.js"></script>
+    <script>
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker.register("/service-worker.js");
+        });
+      }
+    </script>
+  </body>
+</html>
