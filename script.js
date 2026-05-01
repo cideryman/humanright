@@ -16,6 +16,7 @@ const counts = {
   expression: 0,
   help: 0,
   respect: 0,
+  practice: 0,
 };
 
 const state = {
@@ -1233,10 +1234,11 @@ function updateCounts() {
   document.querySelector("#expressionCount").textContent = counts.expression;
   document.querySelector("#helpCount").textContent = counts.help;
   document.querySelector("#respectCount").textContent = counts.respect;
+  document.querySelector("#practiceCount").textContent = counts.practice;
 }
 
 function emptyScore() {
-  return { expression: 0, help: 0, respect: 0 };
+  return { expression: 0, help: 0, respect: 0, practice: 0 };
 }
 
 function questionScoreKey(activity, index = state.index) {
@@ -1248,7 +1250,7 @@ function getScoredAnswer(activity, index = state.index) {
 }
 
 function applyScoreDelta(previousScore, nextScore) {
-  ["expression", "help", "respect"].forEach((field) => {
+  ["expression", "help", "respect", "practice"].forEach((field) => {
     counts[field] = Math.max(0, counts[field] + (nextScore[field] || 0) - (previousScore[field] || 0));
   });
 }
@@ -1262,14 +1264,14 @@ function applyScoredAnswer(activity, index, entry) {
 }
 
 function safetyScore(kind, isCorrect) {
-  const score = { expression: 1, help: 0, respect: 0 };
+  const score = { expression: 1, help: 0, respect: 0, practice: isCorrect ? 0 : 1 };
   if (isCorrect && kind === "help") score.help = 1;
   if (isCorrect && (kind === "respect" || kind === "safe")) score.respect = 1;
   return score;
 }
 
 function shieldScore(text, isCorrect) {
-  const score = { expression: 1, help: 0, respect: 0 };
+  const score = { expression: 1, help: 0, respect: 0, practice: isCorrect ? 0 : 1 };
   if (!isCorrect) return score;
   if (["도와주세요", "싫어요", "안 돼요", "하지 마세요", "찍지 마세요", "선생님께 말할래요"].includes(text)) score.help = 1;
   if (["먼저 물어봐요", "알겠어", "멈출게요", "기다릴게요", "먼저 해도 될까요?"].includes(text)) score.respect = 1;
@@ -1297,6 +1299,7 @@ function activityScoreSummary(activity, scenes) {
     correct: entries.filter((entry) => entry.correct).length,
     help: entries.reduce((sum, entry) => sum + (entry.score.help || 0), 0) + helpPracticeEntries.length,
     respect: entries.reduce((sum, entry) => sum + (entry.score.respect || 0), 0),
+    practice: entries.reduce((sum, entry) => sum + (entry.score.practice || 0), 0),
   };
 }
 
@@ -1540,6 +1543,7 @@ function renderReviewSummary(title, message, scenes) {
     ${scoreSummaryMarkup([
       { label: "답한 질문", value: `${summary.answered}/${summary.total}`, kind: "choice" },
       { label: "좋은 선택", value: `${summary.correct}개`, kind: "safe" },
+      { label: "다시 연습", value: `${summary.practice}개`, kind: "practice" },
       { label: "도움 연습", value: `${summary.help}번`, kind: "help" },
       { label: "존중 연습", value: `${summary.respect}번`, kind: "respect" },
     ])}

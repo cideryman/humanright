@@ -521,7 +521,7 @@ h1 {
 
 .score-items {
   display: grid;
-  grid-template-columns: repeat(4, minmax(130px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
   gap: 10px;
 }
 
@@ -549,6 +549,11 @@ h1 {
 .score-item.respect {
   border-color: var(--respect);
   background: var(--soft-respect);
+}
+
+.score-item.practice {
+  border-color: var(--danger);
+  background: var(--soft-danger);
 }
 
 .score-item span {
