@@ -162,6 +162,10 @@ const choiceCategories = [
       { key: "badminton", title: "배드민턴 할래요", speak: "배드민턴 할래요." },
       { key: "dance", title: "춤을 출래요", speak: "춤을 출래요." },
       { key: "puzzle", title: "퍼즐 맞출래요", speak: "퍼즐 맞출래요." },
+      { key: "joinTogether", title: "같이 하고 싶어요", speak: "같이 하고 싶어요." },
+      { key: "helpedParticipation", title: "도와주면 할 수 있어요", speak: "도와주면 할 수 있어요." },
+      { key: "restReturn", title: "쉬었다가 다시 할래요", speak: "쉬었다가 다시 할래요." },
+      { key: "joinActivity", title: "나도 참여할래요", speak: "나도 참여할래요." },
     ],
   },
 ];
@@ -395,6 +399,71 @@ const shieldScenes = [
       { text: "싫어요", correct: true },
       { text: "선생님께 말할래요", correct: true },
       { text: "그냥 참아요", correct: false },
+    ],
+  },
+  {
+    key: "likeChoice",
+    imageKey: "likeChoice",
+    title: "좋은 마음",
+    easy: "좋아요.",
+    text: "마음에 드는 것이 있어요.",
+    question: "좋을 때 어떻게 말할까요?",
+    answerText: "좋은 방법: 저는 이게 좋아요라고 말해요.",
+    answers: [
+      { text: "저는 이게 좋아요", correct: true },
+      { text: "아무 말 안 해요", correct: false },
+    ],
+  },
+  {
+    key: "dislikeChoice",
+    imageKey: "dislikeChoice",
+    title: "싫은 마음",
+    easy: "싫어요.",
+    text: "하기 싫거나 마음에 들지 않는 일이 있어요.",
+    question: "싫을 때 어떻게 말할까요?",
+    answerText: "좋은 방법: 저는 이건 싫어요라고 말해요.",
+    answers: [
+      { text: "저는 이건 싫어요", correct: true },
+      { text: "억지로 참아요", correct: false },
+    ],
+  },
+  {
+    key: "repeatPlease",
+    imageKey: "repeatPlease",
+    title: "다시 듣기",
+    easy: "다시 말해 주세요.",
+    text: "설명을 잘 못 들었어요.",
+    question: "다시 듣고 싶을 때 어떻게 말할까요?",
+    answerText: "좋은 방법: 다시 말해 주세요라고 말해요.",
+    answers: [
+      { text: "다시 말해 주세요", correct: true },
+      { text: "모르는 척해요", correct: false },
+    ],
+  },
+  {
+    key: "speakSlowly",
+    imageKey: "speakSlowly",
+    title: "천천히 듣기",
+    easy: "천천히 말해 주세요.",
+    text: "말이 너무 빨라서 이해하기 어려워요.",
+    question: "천천히 듣고 싶을 때 어떻게 말할까요?",
+    answerText: "좋은 방법: 천천히 말해 주세요라고 말해요.",
+    answers: [
+      { text: "천천히 말해 주세요", correct: true },
+      { text: "그냥 고개만 끄덕여요", correct: false },
+    ],
+  },
+  {
+    key: "notUnderstand",
+    imageKey: "notUnderstand",
+    title: "모르겠어요",
+    easy: "잘 모르겠어요.",
+    text: "무엇을 해야 하는지 잘 모르겠어요.",
+    question: "잘 모를 때 어떻게 말할까요?",
+    answerText: "좋은 방법: 잘 모르겠어요라고 말하고 도움을 받아요.",
+    answers: [
+      { text: "잘 모르겠어요", correct: true },
+      { text: "아는 척해요", correct: false },
     ],
   },
   {
@@ -755,16 +824,24 @@ function illustration(name) {
     "chair",
     "choiceMeal",
     "clothes",
+    "coffee",
+    "cola",
+    "computer",
     "cookie",
+    "curryRice",
     "danger",
     "desk",
+    "dance",
+    "dislikeChoice",
     "dressShoes",
     "drink",
     "drawing",
     "food",
+    "friedRice",
     "fruit",
     "game",
     "help",
+    "helpedParticipation",
     "hoodie",
     "hoodieBlue",
     "hoodieGreen",
@@ -778,14 +855,26 @@ function illustration(name) {
     "jumperWarm",
     "jumperZip",
     "kimbap",
+    "likeChoice",
     "mat",
     "milk",
     "music",
+    "mainActivity",
+    "mainClothes",
+    "mainFood",
+    "mainSafety",
+    "mainSeat",
+    "mainShield",
     "noWear",
+    "notUnderstand",
     "personalItem",
     "photoTaking",
+    "porkCutlet",
+    "puzzle",
     "ramen",
+    "repeatPlease",
     "respect",
+    "restReturn",
     "safe",
     "seat",
     "shield",
@@ -795,7 +884,11 @@ function illustration(name) {
     "slippers",
     "snack",
     "sneakers",
+    "soyMilk",
     "sofa",
+    "soupRice",
+    "speakSlowly",
+    "sportsDrink",
     "strangerCaution",
     "tea",
     "tracksuit",
@@ -821,6 +914,10 @@ function illustration(name) {
     "lostStreet",
     "water",
     "yogurt",
+    "badminton",
+    "joinActivity",
+    "joinGroup",
+    "joinTogether",
   ]);
 
   const imageAssetName = imageAssetAliases[name] || name;
@@ -1213,6 +1310,16 @@ function answerVisual(text, kind = "") {
     "세치기": "ansCutLine",
     "그냥 지켜봐요": "ansStaySilent",
     "그냥 참아요": "ansStaySilent",
+    "저는 이게 좋아요": "likeChoice",
+    "저는 이건 싫어요": "dislikeChoice",
+    "다시 말해 주세요": "repeatPlease",
+    "천천히 말해 주세요": "speakSlowly",
+    "잘 모르겠어요": "notUnderstand",
+    "아무 말 안 해요": "ansStaySilent",
+    "억지로 참아요": "ansStaySilent",
+    "모르는 척해요": "ansStaySilent",
+    "그냥 고개만 끄덕여요": "ansStaySilent",
+    "아는 척해요": "ansStaySilent",
   };
 
   const visualKey = visualByText[text] || (kind === "danger" ? "danger" : kind === "help" ? "help" : "respect");
@@ -1264,6 +1371,16 @@ function readButton(text) {
 }
 
 function mainMenuIcon(type) {
+  const imageByType = {
+    food: "mainFood",
+    clothes: "mainClothes",
+    seat: "mainSeat",
+    activity: "mainActivity",
+    safety: "mainSafety",
+    shield: "mainShield",
+  };
+  if (imageByType[type]) return illustration(imageByType[type]);
+
   const icons = {
     food: `
       <svg class="menu-icon food" viewBox="0 0 180 150" aria-hidden="true">
@@ -1428,7 +1545,19 @@ function safetyScore(kind, isCorrect) {
 function shieldScore(text, isCorrect) {
   const score = { expression: 1, help: 0, respect: 0, practice: isCorrect ? 0 : 1 };
   if (!isCorrect) return score;
-  if (["도와주세요", "싫어요", "안 돼요", "하지 마세요", "찍지 마세요", "선생님께 말할래요"].includes(text)) score.help = 1;
+  if (
+    [
+      "도와주세요",
+      "싫어요",
+      "안 돼요",
+      "하지 마세요",
+      "찍지 마세요",
+      "선생님께 말할래요",
+      "다시 말해 주세요",
+      "천천히 말해 주세요",
+      "잘 모르겠어요",
+    ].includes(text)
+  ) score.help = 1;
   if (["먼저 물어봐요", "알겠어", "멈출게요", "기다릴게요", "먼저 해도 될까요?"].includes(text)) score.respect = 1;
   return score;
 }
@@ -1635,8 +1764,8 @@ function renderChoice() {
     stage.innerHTML = `
       <div class="activity-title">
         <h2>${selectedCategory.title} 고르기</h2>
-        <p class="prompt">${selectedCategory.key === "activity" ? "하고 싶은 말을 골라요." : "하나를 골라요."}</p>
-        ${readButton(`${selectedCategory.title} 고르기. 하나를 골라요.`)}
+        <p class="prompt">${selectedCategory.key === "activity" ? "하고 싶은 활동이나 말을 골라요." : "하나를 골라요."}</p>
+        ${readButton(`${selectedCategory.title} 고르기. ${selectedCategory.key === "activity" ? "하고 싶은 활동이나 말을 골라요." : "하나를 골라요."}`)}
       </div>
       ${progressMarkup(picked ? 1 : 0, 1, "진행")}
       <div class="card-grid ${state.mode === "easy" ? "two" : ""}">
