@@ -474,7 +474,7 @@ const safetyScenes = [
   },
   {
     key: "phonePrivacy",
-    imageKey: "phonePrivacy",
+    imageKey: "privacyInfo",
     title: "휴대폰 메시지",
     visual: "휴대폰으로 이름, 사진, 전화번호, 복지카드 사진, 주민등록번호를 보내 달라는 메시지가 왔어요.",
     story: "휴대폰으로 이름, 사진, 전화번호, 복지카드 사진, 주민등록번호를 보내 달라는 메시지가 왔어요. 개인정보는 조심해야 해요.",
@@ -1058,6 +1058,7 @@ function illustration(name) {
     "medicineSafety",
     "moneySafety",
     "phonePrivacy",
+    "privacyInfo",
     "redLightCrossing",
     "seatAlone",
     "seatFriend",
