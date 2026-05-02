@@ -2655,9 +2655,9 @@ stage.addEventListener("click", (event) => {
     });
     if (changed) addRecord(`생활 안전: ${answerText}`);
     state.safetyAnswer = getScoredAnswer("safety");
-    setFeedback(isCorrect ? "좋은 방법이에요." : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
+    setFeedback(isCorrect ? "좋은 방법이에요." : "안 돼요. 다시 선택하세요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
     renderSafety();
-    scheduleAutoAdvance("safety", answerIndex);
+    if (isCorrect) scheduleAutoAdvance("safety", answerIndex);
   }
 
   if (shield) {
@@ -2671,9 +2671,9 @@ stage.addEventListener("click", (event) => {
       score: shieldScore(shield.dataset.shield, isCorrect),
     });
     if (changed) addRecord(`소통 연습: ${shield.dataset.shield}`);
-    setFeedback(isCorrect ? `${shield.dataset.shield}.` : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
+    setFeedback(isCorrect ? `${shield.dataset.shield}.` : "안 돼요. 다시 선택하세요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
     renderShield();
-    scheduleAutoAdvance("shield", answerIndex);
+    if (isCorrect) scheduleAutoAdvance("shield", answerIndex);
   }
 
   updateCounts();
