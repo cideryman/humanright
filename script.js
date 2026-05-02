@@ -1814,6 +1814,7 @@ function renderHome() {
         )
         .join("")}
     </div>
+    <p class="home-credit">기획·제작: 김종균</p>
   `;
   stage.appendChild(feedback);
 }
