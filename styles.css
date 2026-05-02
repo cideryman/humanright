@@ -179,11 +179,18 @@ h1 {
 
 .progress-card {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
   gap: 8px;
   padding: 12px 14px;
   border: 2px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.86);
+}
+
+.progress-main {
+  display: grid;
+  gap: 8px;
 }
 
 .progress-text {
@@ -211,6 +218,34 @@ h1 {
   height: 100%;
   border-radius: inherit;
   background: linear-gradient(90deg, #15a37f, #84cc16);
+}
+
+.exit-button {
+  min-height: 54px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 2px solid var(--danger);
+  border-radius: 999px;
+  background: var(--soft-danger);
+  color: var(--danger);
+  font-size: 18px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.exit-mark {
+  width: 30px;
+  height: 30px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--danger);
+  color: white;
+  font-size: 18px;
+  line-height: 1;
 }
 
 .listen {
@@ -1289,6 +1324,17 @@ h1 {
     font-size: clamp(20px, 5.2vw, 26px);
     line-height: 1.28;
     word-break: keep-all;
+  }
+
+  .progress-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .exit-button {
+    width: 100%;
+    min-height: 58px;
+    font-size: 19px;
   }
 
   .listen {

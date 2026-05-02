@@ -1613,13 +1613,19 @@ function progressMarkup(current, total, label = "진행") {
   const percent = Math.round((safeCurrent / safeTotal) * 100);
   return `
     <div class="progress-card" aria-label="${label} ${safeCurrent}/${safeTotal}">
-      <div class="progress-text">
-        <span>${label}</span>
-        <strong>${safeCurrent}/${safeTotal}</strong>
+      <div class="progress-main">
+        <div class="progress-text">
+          <span>${label}</span>
+          <strong>${safeCurrent}/${safeTotal}</strong>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" style="width: ${percent}%"></div>
+        </div>
       </div>
-      <div class="progress-track" aria-hidden="true">
-        <div class="progress-fill" style="width: ${percent}%"></div>
-      </div>
+      <button class="exit-button" data-main-home type="button" aria-label="게임 나가기">
+        <span class="exit-mark" aria-hidden="true">X</span>
+        <span>게임 나가기</span>
+      </button>
     </div>
   `;
 }
@@ -1781,7 +1787,7 @@ function renderChoice() {
           .join("")}
       </div>
       ${selectedCategory.note ? `<p class="choice-note">${selectedCategory.note}</p>` : ""}
-      <button class="back-button" data-choice-back type="button">음식 고르기로 가기</button>
+      <button class="back-button" data-main-home type="button">처음으로 가기</button>
     `;
     stage.appendChild(feedback);
     return;
