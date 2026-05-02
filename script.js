@@ -38,6 +38,7 @@ const state = {
 
 const records = [];
 let interactionLocked = false;
+let autoAdvanceTimer = null;
 
 function lockInteraction(duration = 600) {
   interactionLocked = true;
@@ -2408,11 +2409,51 @@ function moveToChoiceStart() {
   });
 }
 
+function clearAutoAdvance() {
+  window.clearTimeout(autoAdvanceTimer);
+  autoAdvanceTimer = null;
+}
+
+function advanceCard({ automatic = false } = {}) {
+  if (state.activity !== "safety" && state.activity !== "shield") return;
+
+  if (state.activity === "safety" && state.index >= safetyScenes.length) {
+    goHome();
+    return;
+  }
+
+  if (state.activity === "shield" && state.index >= shieldScenes.length) {
+    goHome();
+    return;
+  }
+
+  state.index += 1;
+  state.safetyAnswer = null;
+  render();
+  moveToQuestionStart();
+  if (state.activity === "safety" && state.index >= safetyScenes.length) {
+    setFeedback("참 잘했어요.", "참 잘했어요");
+  }
+  if (state.activity === "shield" && state.index >= shieldScenes.length) {
+    setFeedback("참 잘했어요.", "참 잘했어요");
+  }
+  if (!automatic) clearAutoAdvance();
+}
+
+function scheduleAutoAdvance(activity, index) {
+  clearAutoAdvance();
+  autoAdvanceTimer = window.setTimeout(() => {
+    if (state.activity !== activity || state.index !== index) return;
+    advanceCard({ automatic: true });
+  }, 900);
+}
+
 const segmented = document.querySelector(".segmented");
 if (segmented) {
   segmented.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-activity]");
     if (!button) return;
+    clearAutoAdvance();
     if (button.dataset.activity === "choice") {
       openChoiceEntry(button.dataset.choiceEntry || "food");
     } else {
@@ -2434,6 +2475,7 @@ if (modeSwitch) {
   modeSwitch.addEventListener("click", (event) => {
     const button = event.target.closest("button[data-mode]");
     if (!button) return;
+    clearAutoAdvance();
     state.mode = button.dataset.mode;
     state.safetyAnswer = null;
     state.choiceCategory = null;
@@ -2467,11 +2509,13 @@ stage.addEventListener("click", (event) => {
   }
 
   if (mainHome) {
+    clearAutoAdvance();
     goHome();
     return;
   }
 
   if (mainMenu) {
+    clearAutoAdvance();
     lockInteraction(300);
     startMainMenu(mainMenu.dataset.mainMenu);
     return;
@@ -2600,6 +2644,7 @@ stage.addEventListener("click", (event) => {
 
   if (safety) {
     lockInteraction();
+    const answerIndex = state.index;
     const answerText = safety.dataset.answer;
     const isCorrect = safety.dataset.correct === "true";
     speak(answerText);
@@ -2612,10 +2657,12 @@ stage.addEventListener("click", (event) => {
     state.safetyAnswer = getScoredAnswer("safety");
     setFeedback(isCorrect ? "좋은 방법이에요." : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
     renderSafety();
+    scheduleAutoAdvance("safety", answerIndex);
   }
 
   if (shield) {
     lockInteraction();
+    const answerIndex = state.index;
     const isCorrect = shield.dataset.correct !== "false";
     speak(shield.dataset.shield);
     const changed = applyScoredAnswer("shield", state.index, {
@@ -2626,6 +2673,7 @@ stage.addEventListener("click", (event) => {
     if (changed) addRecord(`소통 연습: ${shield.dataset.shield}`);
     setFeedback(isCorrect ? `${shield.dataset.shield}.` : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
     renderShield();
+    scheduleAutoAdvance("shield", answerIndex);
   }
 
   updateCounts();
@@ -2653,6 +2701,7 @@ expressionModal.addEventListener("click", (event) => {
 
 prevCardButton.addEventListener("click", () => {
   if (state.activity !== "safety" && state.activity !== "shield") return;
+  clearAutoAdvance();
   state.index = Math.max(0, state.index - 1);
   state.safetyAnswer = null;
   render();
@@ -2660,26 +2709,8 @@ prevCardButton.addEventListener("click", () => {
 });
 
 nextCardButton.addEventListener("click", () => {
-  if (state.activity === "safety" && state.index >= safetyScenes.length) {
-    goHome();
-    return;
-  }
-
-  if (state.activity === "shield" && state.index >= shieldScenes.length) {
-    goHome();
-    return;
-  }
-
-  state.index += 1;
-  state.safetyAnswer = null;
-  render();
-  moveToQuestionStart();
-  if (state.activity === "safety" && state.index >= safetyScenes.length) {
-    setFeedback("참 잘했어요.", "참 잘했어요");
-  }
-  if (state.activity === "shield" && state.index >= shieldScenes.length) {
-    setFeedback("참 잘했어요.", "참 잘했어요");
-  }
+  clearAutoAdvance();
+  advanceCard();
 });
 
 document.querySelector("#resetRecord").addEventListener("click", () => {

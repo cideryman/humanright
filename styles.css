@@ -51,7 +51,7 @@ button:focus-visible {
   grid-template-columns: minmax(0, 1fr) 280px;
   grid-template-rows: auto auto minmax(430px, 1fr) auto;
   gap: 18px;
-  padding: 24px;
+  padding: 24px 24px 112px;
 }
 
 .topbar,
@@ -1071,16 +1071,34 @@ h1 {
 }
 
 .facilitator {
-  display: flex;
-  justify-content: flex-end;
+  position: fixed;
+  left: 24px;
+  right: 322px;
+  bottom: 18px;
+  z-index: 15;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
+  width: min(720px, calc(100vw - 370px));
+  margin-left: auto;
+  padding: 12px;
+  border: 2px solid rgba(15, 118, 110, 0.18);
+  border-radius: 22px;
+  background: rgba(255, 253, 247, 0.96);
+  box-shadow: 0 -10px 26px rgba(23, 33, 31, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.facilitator[hidden],
+.facilitator [hidden] {
+  display: none;
 }
 
 .facilitator button {
-  min-width: 150px;
-  min-height: 58px;
+  min-width: 0;
+  min-height: 64px;
   padding: 0 18px;
-  border-radius: 8px;
+  border-radius: 14px;
   font-size: 22px;
   font-weight: 900;
 }
@@ -1252,6 +1270,7 @@ h1 {
 @media (max-width: 980px) {
   .app {
     grid-template-columns: 1fr;
+    padding-bottom: 112px;
   }
 
   .record {
@@ -1279,6 +1298,14 @@ h1 {
   .topbar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .facilitator {
+    left: 12px;
+    right: 12px;
+    width: auto;
+    max-width: 720px;
+    margin: 0 auto;
   }
 }
 
@@ -1468,25 +1495,21 @@ h1 {
   }
 
   .facilitator {
-    position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
-    z-index: 15;
     display: flex;
     flex-direction: row;
     gap: 8px;
+    width: auto;
+    max-width: none;
     margin: 0;
     padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+    border-right: 0;
+    border-bottom: 0;
+    border-left: 0;
+    border-radius: 0;
     border-top: 2px solid rgba(15, 118, 110, 0.18);
-    background: rgba(255, 253, 247, 0.96);
-    box-shadow: 0 -10px 26px rgba(23, 33, 31, 0.12);
-    backdrop-filter: blur(8px);
-  }
-
-  .facilitator[hidden],
-  .facilitator [hidden] {
-    display: none;
   }
 
   .facilitator button {
