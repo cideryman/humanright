@@ -162,10 +162,10 @@ const choiceCategories = [
       { key: "badminton", title: "배드민턴 할래요", speak: "배드민턴 할래요." },
       { key: "dance", title: "춤을 출래요", speak: "춤을 출래요." },
       { key: "puzzle", title: "퍼즐 맞출래요", speak: "퍼즐 맞출래요." },
-      { key: "joinTogether", title: "같이 하고 싶어요", speak: "같이 하고 싶어요." },
-      { key: "helpedParticipation", title: "도와주면 할 수 있어요", speak: "도와주면 할 수 있어요." },
-      { key: "restReturn", title: "쉬었다가 다시 할래요", speak: "쉬었다가 다시 할래요." },
-      { key: "joinActivity", title: "나도 참여할래요", speak: "나도 참여할래요." },
+      { key: "joinTogether", title: "저도 같이 하고 싶어요", speak: "저도 같이 하고 싶어요." },
+      { key: "helpedParticipation", title: "저는 도움을 받으면 할 수 있어요", speak: "저는 도움을 받으면 할 수 있어요." },
+      { key: "restReturn", title: "저는 쉬었다가 다시 할래요", speak: "저는 쉬었다가 다시 할래요." },
+      { key: "joinActivity", title: "저도 함께 참여할래요", speak: "저도 함께 참여할래요." },
     ],
   },
 ];
@@ -2039,6 +2039,7 @@ function openChoiceEntry(choiceEntry) {
   } else {
     state.choiceFlow = null;
     state.choiceCategory = choiceEntry;
+    delete state.choiceSelections[choiceEntry];
   }
   setActiveActivityButton("choice", choiceEntry);
 }
