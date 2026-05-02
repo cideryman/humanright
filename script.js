@@ -99,8 +99,8 @@ const choiceCategories = [
         options: [
           { key: "tracksuitGreen", title: "초록 츄리닝", speak: "초록 츄리닝을 골랐어요." },
           { key: "tracksuitBlue", title: "파란 츄리닝", speak: "파란 츄리닝을 골랐어요." },
-          { key: "tracksuitLine", title: "줄무늬 츄리닝", speak: "줄무늬 츄리닝을 골랐어요." },
-          { key: "tracksuitSet", title: "상하의 세트", speak: "상하의 세트를 골랐어요." },
+          { key: "tracksuitLine", title: "검은색 츄리닝", speak: "검은색 츄리닝을 골랐어요." },
+          { key: "tracksuitSet", title: "회색 츄리닝", speak: "회색 츄리닝을 골랐어요." },
         ],
       },
       {
