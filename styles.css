@@ -248,6 +248,16 @@ h1 {
   line-height: 1;
 }
 
+.exit-button.complete {
+  border-color: var(--choice);
+  background: var(--soft-choice);
+  color: var(--choice);
+}
+
+.exit-button.complete .exit-mark {
+  background: var(--choice);
+}
+
 .listen {
   min-width: 112px;
   min-height: 52px;

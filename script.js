@@ -1894,10 +1894,13 @@ function scoreSummaryMarkup(items) {
   `;
 }
 
-function progressMarkup(current, total, label = "진행") {
+function progressMarkup(current, total, label = "진행", options = {}) {
   const safeTotal = Math.max(1, total);
   const safeCurrent = Math.min(Math.max(0, current), safeTotal);
   const percent = Math.round((safeCurrent / safeTotal) * 100);
+  const isComplete = Boolean(options.complete);
+  const buttonLabel = isComplete ? "완료" : "게임 나가기";
+  const buttonIcon = isComplete ? "✓" : "X";
   return `
     <div class="progress-card" aria-label="${label} ${safeCurrent}/${safeTotal}">
       <div class="progress-main">
@@ -1909,9 +1912,9 @@ function progressMarkup(current, total, label = "진행") {
           <div class="progress-fill" style="width: ${percent}%"></div>
         </div>
       </div>
-      <button class="exit-button" data-main-home type="button" aria-label="게임 나가기">
-        <span class="exit-mark" aria-hidden="true">X</span>
-        <span>게임 나가기</span>
+      <button class="exit-button ${isComplete ? "complete" : ""}" data-main-home type="button" aria-label="${buttonLabel}">
+        <span class="exit-mark" aria-hidden="true">${buttonIcon}</span>
+        <span>${buttonLabel}</span>
       </button>
     </div>
   `;
@@ -1964,7 +1967,7 @@ function renderChoiceSummary() {
       <p class="prompt">내가 스스로 골랐어요.</p>
       ${readButton(`${title}. 내가 스스로 골랐어요.`)}
     </div>
-    ${progressMarkup(steps.length, steps.length, "진행")}
+    ${progressMarkup(steps.length, steps.length, "진행", { complete: true })}
     ${scoreSummaryMarkup([
       { label: "스스로 결정", value: `${state.choiceFlow.picks.length}번`, kind: "choice" },
       { label: "고른 카드", value: `${visiblePicks.length}개`, kind: "safe" },
@@ -1997,7 +2000,7 @@ function renderDirectChoiceSummary(category, picked) {
       <p class="prompt">내가 스스로 골랐어요.</p>
       ${readButton(`${title}. 내가 스스로 골랐어요.`)}
     </div>
-    ${progressMarkup(1, 1, "진행")}
+    ${progressMarkup(1, 1, "진행", { complete: true })}
     ${scoreSummaryMarkup([
       { label: "스스로 결정", value: "1번", kind: "choice" },
       { label: "고른 카드", value: "1개", kind: "safe" },
@@ -2181,7 +2184,7 @@ function renderReviewSummary(title, message, scenes) {
       <p class="prompt">정답과 오답을 다시 봐요.</p>
       ${readButton(`${title}. 정답과 오답을 다시 봐요.`)}
     </div>
-    ${progressMarkup(scenes.length, scenes.length, "진행")}
+    ${progressMarkup(scenes.length, scenes.length, "진행", { complete: true })}
     ${scoreSummaryMarkup([
       { label: "답한 질문", value: `${summary.answered}/${summary.total}`, kind: "choice" },
       { label: "좋은 선택", value: `${summary.correct}개`, kind: "safe" },
