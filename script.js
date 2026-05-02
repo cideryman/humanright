@@ -146,6 +146,10 @@ const choiceCategories = [
       { key: "sofa", title: "소파", speak: "소파를 골랐어요." },
       { key: "mat", title: "매트", speak: "매트를 골랐어요." },
       { key: "desk", title: "책상 자리", speak: "책상 자리를 골랐어요." },
+      { key: "seatAlone", title: "혼자 앉을래요", speak: "혼자 앉을래요." },
+      { key: "seatFriend", title: "친구와 앉을래요", speak: "친구와 앉을래요." },
+      { key: "seatWindow", title: "창가에 앉을래요", speak: "창가에 앉을래요." },
+      { key: "seatHelper", title: "선생님 가까이 앉을래요", speak: "선생님 가까이 앉을래요." },
     ],
   },
   {
@@ -154,18 +158,14 @@ const choiceCategories = [
     text: "하고 싶은 활동을 골라요",
     note: "공동 시간과 개인 선택 시간을 구분해요. 수업 시간에는 함께 정한 활동을 하고, 선택 시간에는 내가 고를 수 있어요.",
     options: [
-      { key: "drawing", title: "그림을 그릴래요", speak: "그림을 그릴래요." },
-      { key: "music", title: "음악을 들을래요", speak: "음악을 들을래요." },
-      { key: "walk", title: "산책을 할래요", speak: "산책을 할래요." },
-      { key: "game", title: "놀고 싶어요", speak: "놀고 싶어요." },
-      { key: "computer", title: "컴퓨터 할래요", speak: "컴퓨터 할래요." },
-      { key: "badminton", title: "배드민턴 할래요", speak: "배드민턴 할래요." },
-      { key: "dance", title: "춤을 출래요", speak: "춤을 출래요." },
-      { key: "puzzle", title: "퍼즐 맞출래요", speak: "퍼즐 맞출래요." },
-      { key: "joinTogether", title: "저도 같이 하고 싶어요", speak: "저도 같이 하고 싶어요." },
-      { key: "helpedParticipation", title: "저는 도움을 받으면 할 수 있어요", speak: "저는 도움을 받으면 할 수 있어요." },
-      { key: "restReturn", title: "저는 쉬었다가 다시 할래요", speak: "저는 쉬었다가 다시 할래요." },
-      { key: "joinActivity", title: "저도 함께 참여할래요", speak: "저도 함께 참여할래요." },
+      { key: "drawing", title: "그림을 그릴래요", phrase: "그림 그리기", topic: "그림 그리기는", speak: "그림을 그릴래요." },
+      { key: "music", title: "음악을 들을래요", phrase: "음악 듣기", topic: "음악 듣기는", speak: "음악을 들을래요." },
+      { key: "walk", title: "산책을 할래요", phrase: "산책", topic: "산책은", speak: "산책을 할래요." },
+      { key: "game", title: "놀고 싶어요", phrase: "놀이", topic: "놀이는", speak: "놀고 싶어요." },
+      { key: "computer", title: "컴퓨터 할래요", phrase: "컴퓨터", topic: "컴퓨터는", speak: "컴퓨터 할래요." },
+      { key: "badminton", title: "배드민턴 할래요", phrase: "배드민턴", topic: "배드민턴은", speak: "배드민턴 할래요." },
+      { key: "dance", title: "춤을 출래요", phrase: "춤추기", topic: "춤추기는", speak: "춤을 출래요." },
+      { key: "puzzle", title: "퍼즐 맞출래요", phrase: "퍼즐 맞추기", topic: "퍼즐 맞추기는", speak: "퍼즐 맞출래요." },
     ],
   },
 ];
@@ -213,6 +213,8 @@ const foodFlowSteps = [
       { key: "cookie", title: "과자", speak: "과자를 골랐어요." },
       { key: "bread", title: "빵", speak: "빵을 골랐어요." },
       { key: "yogurt", title: "요구르트", speak: "요구르트를 골랐어요." },
+      { key: "cakeSnack", title: "케이크", speak: "케이크를 골랐어요." },
+      { key: "iceCream", title: "아이스크림", speak: "아이스크림을 골랐어요." },
     ],
   },
 ];
@@ -285,6 +287,62 @@ const clothesFlowSteps = [
   },
 ];
 
+const activityParticipationOptions = [
+  {
+    key: "activityAlone",
+    imageKey: "successHappy",
+    title: "혼자 해볼래요",
+    speak: "혼자 해볼래요.",
+    sentence: "혼자 해볼래요",
+  },
+  {
+    key: "joinTogether",
+    imageKey: "joinTogether",
+    title: "같이 할래요",
+    speak: "같이 할래요.",
+    sentence: "같이 하고 싶어요",
+  },
+  {
+    key: "helpedParticipation",
+    imageKey: "helpedParticipation",
+    title: "도움받아 할래요",
+    speak: "도움받아 할래요.",
+    sentence: "도움을 받으면 할 수 있어요",
+  },
+  {
+    key: "restReturn",
+    imageKey: "restReturn",
+    title: "쉬었다가 할래요",
+    speak: "쉬었다가 할래요.",
+    sentence: "쉬었다가 다시 할래요",
+  },
+];
+
+function getActivityFlowSteps() {
+  const activity = state.choiceFlow?.picks?.[0];
+  const activityTopic = activity?.topic || "이 활동은";
+  return [
+    {
+      key: "activity",
+      title: "활동 고르기",
+      prompt: "하고 싶은 활동을 골라요.",
+      resultLabel: "활동",
+      note: choiceCategories.find((category) => category.key === "activity").note,
+      options: choiceCategories.find((category) => category.key === "activity").options,
+    },
+    {
+      key: "participation",
+      title: "참여 방법 고르기",
+      prompt: `${activityTopic} 어떻게 할까요?`,
+      resultLabel: "참여 방법",
+      options: activityParticipationOptions.map((option) => ({
+        ...option,
+        speak: activity ? `${activity.topic || activity.title} ${option.sentence}.` : option.speak,
+      })),
+    },
+  ];
+}
+
 const safetyScenes = [
   {
     key: "permission",
@@ -355,6 +413,77 @@ const safetyScenes = [
       { text: "찍지 마세요", kind: "help", correct: true },
       { text: "선생님에게 말해요", kind: "help", correct: true },
       { text: "싫어도 참아요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "trafficSafety",
+    imageKey: "trafficSafety",
+    title: "횡단보도",
+    visual: "길을 건너야 해요. 차가 다니는 길이에요.",
+    story: "길을 건너야 해요. 차가 다니는 길에서는 신호와 차를 잘 봐야 해요.",
+    question: "길을 건널 때 어떻게 할까요?",
+    answerText: "좋은 방법: 횡단보도에서 멈추고 신호와 차를 보고 건너요.",
+    answers: [
+      { text: "초록불에 건너요", kind: "safe", correct: true },
+      { text: "차가 오는지 보고 건너요", kind: "safe", correct: true },
+      { text: "빨간불에 뛰어가요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "evacuation",
+    imageKey: "evacuation",
+    title: "긴급 대피",
+    visual: "불이 나거나 비상벨이 울릴 수 있어요.",
+    story: "불이 나거나 비상벨이 울리면 안전한 곳으로 나가야 해요.",
+    question: "비상 상황에는 어떻게 할까요?",
+    answerText: "좋은 방법: 선생님 안내를 듣고 비상구로 천천히 나가요.",
+    answers: [
+      { text: "선생님 안내를 따라가요", kind: "safe", correct: true },
+      { text: "비상구로 나가요", kind: "safe", correct: true },
+      { text: "혼자 숨어요", kind: "danger", correct: false },
+      { text: "물건을 찾으러 돌아가요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "medicineSafety",
+    imageKey: "medicineSafety",
+    title: "약 확인",
+    visual: "약을 먹어야 할 때가 있어요.",
+    story: "약을 먹어야 할 때는 내 약이 맞는지 먼저 확인해야 해요.",
+    question: "약을 먹기 전 어떻게 할까요?",
+    answerText: "좋은 방법: 선생님이나 보호자에게 내 약인지 확인하고 먹어요.",
+    answers: [
+      { text: "내 약인지 확인해요", kind: "safe", correct: true },
+      { text: "선생님에게 물어봐요", kind: "help", correct: true },
+      { text: "친구 약을 먹어요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "moneySafety",
+    imageKey: "moneySafety",
+    title: "돈을 달라고 해요",
+    visual: "누군가 돈을 달라고 하거나 빌려 달라고 해요.",
+    story: "누군가 돈을 달라고 하거나 빌려 달라고 해요. 바로 주면 곤란할 수 있어요.",
+    question: "돈을 달라고 하면 어떻게 할까요?",
+    answerText: "좋은 방법: 바로 주지 않고 선생님이나 가족에게 말해요.",
+    answers: [
+      { text: "선생님에게 말해요", kind: "help", correct: true },
+      { text: "가족에게 말해요", kind: "help", correct: true },
+      { text: "바로 돈을 줘요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "phonePrivacy",
+    imageKey: "phonePrivacy",
+    title: "휴대폰 메시지",
+    visual: "휴대폰으로 이름, 사진, 전화번호를 보내 달라는 메시지가 왔어요.",
+    story: "휴대폰으로 이름, 사진, 전화번호를 보내 달라는 메시지가 왔어요. 개인정보는 조심해야 해요.",
+    question: "개인정보를 보내 달라고 하면 어떻게 할까요?",
+    answerText: "좋은 방법: 바로 보내지 않고 선생님이나 가족에게 물어봐요.",
+    answers: [
+      { text: "선생님에게 보여줘요", kind: "help", correct: true },
+      { text: "가족에게 물어봐요", kind: "help", correct: true },
+      { text: "바로 보내요", kind: "danger", correct: false },
     ],
   },
 ];
@@ -915,9 +1044,21 @@ function illustration(name) {
     "water",
     "yogurt",
     "badminton",
+    "cakeSnack",
+    "evacuation",
+    "iceCream",
     "joinActivity",
     "joinGroup",
     "joinTogether",
+    "medicineSafety",
+    "moneySafety",
+    "phonePrivacy",
+    "seatAlone",
+    "seatFriend",
+    "seatHelper",
+    "seatWindow",
+    "successHappy",
+    "trafficSafety",
   ]);
 
   const imageAssetName = imageAssetAliases[name] || name;
@@ -1297,6 +1438,20 @@ function answerVisual(text, kind = "") {
     "그냥 따라가요": "ansFollowStranger",
     "찍지 마세요": "ansNoPhoto",
     "싫어도 참아요": "ansSilentPhoto",
+    "초록불에 건너요": "trafficSafety",
+    "차가 오는지 보고 건너요": "trafficSafety",
+    "빨간불에 뛰어가요": "danger",
+    "선생님 안내를 따라가요": "evacuation",
+    "비상구로 나가요": "evacuation",
+    "혼자 숨어요": "ansStaySilent",
+    "물건을 찾으러 돌아가요": "danger",
+    "내 약인지 확인해요": "medicineSafety",
+    "선생님에게 물어봐요": "ansTellTeacher",
+    "친구 약을 먹어요": "danger",
+    "바로 돈을 줘요": "moneySafety",
+    "선생님에게 보여줘요": "phonePrivacy",
+    "가족에게 물어봐요": "ansTellFamily",
+    "바로 보내요": "phonePrivacy",
     "안 돼요": "ansStop",
     "먼저 물어봐요": "ansAskPermission",
     "싫어요": "ansStop",
@@ -1632,7 +1787,10 @@ function progressMarkup(current, total, label = "진행") {
 
 function getActiveChoiceSteps() {
   if (!state.choiceFlow) return [];
-  return state.choiceFlow.type === "food" ? foodFlowSteps : clothesFlowSteps;
+  if (state.choiceFlow.type === "food") return foodFlowSteps;
+  if (state.choiceFlow.type === "clothes") return clothesFlowSteps;
+  if (state.choiceFlow.type === "activity") return getActivityFlowSteps();
+  return [];
 }
 
 function renderHome() {
@@ -1662,7 +1820,8 @@ function renderHome() {
 
 function renderChoiceSummary() {
   const isFood = state.choiceFlow.type === "food";
-  const title = isFood ? "내가 고른 음식이에요" : "내가 고른 것이에요";
+  const isActivity = state.choiceFlow.type === "activity";
+  const title = isFood ? "내가 고른 음식이에요" : isActivity ? "내가 고른 활동이에요" : "내가 고른 것이에요";
   const visiblePicks = state.choiceFlow.picks.filter((pick) => !pick.skip);
   const steps = getActiveChoiceSteps();
   focusWord.textContent = "선택";
@@ -1677,6 +1836,7 @@ function renderChoiceSummary() {
       { label: "스스로 결정", value: `${state.choiceFlow.picks.length}번`, kind: "choice" },
       { label: "고른 카드", value: `${visiblePicks.length}개`, kind: "safe" },
     ])}
+    ${state.choiceFlow.summary ? `<div class="choice-result-sentence">${state.choiceFlow.summary}</div>` : ""}
     <div class="card-grid summary-grid">
       ${visiblePicks
         .map(
@@ -1742,13 +1902,14 @@ function renderChoiceFlow() {
         .map(
           (card) => `
             <button class="big-card" data-flow-option="${card.key}" data-speak="${card.speak}" type="button">
-              ${illustration(card.key)}
+              ${illustration(card.imageKey || card.key)}
               <strong>${card.title}</strong>
             </button>
           `,
         )
         .join("")}
     </div>
+    ${step.note ? `<p class="choice-note">${step.note}</p>` : ""}
   `;
   stage.appendChild(feedback);
 }
@@ -2033,7 +2194,7 @@ function openChoiceEntry(choiceEntry) {
   state.index = 0;
   state.safetyAnswer = null;
   state.choiceSubcategory = null;
-  if (choiceEntry === "food" || choiceEntry === "clothes") {
+  if (choiceEntry === "food" || choiceEntry === "clothes" || choiceEntry === "activity") {
     state.choiceFlow = { type: choiceEntry, step: 0, picks: [] };
     state.choiceCategory = null;
   } else {
@@ -2183,7 +2344,7 @@ stage.addEventListener("click", (event) => {
     state.bellTaps += 1;
     const progress = Math.min(state.bellTaps, 3) * 33.34;
     practice.querySelector("[data-gauge-fill]").style.width = `${progress}%`;
-    speak("도와주세요");
+    speak("선생님 도와주세요");
     if (state.bellTaps >= 3) {
       practice.dataset.complete = "true";
       const isNewPractice = applyHelpPracticeScore(state.index);
@@ -2249,12 +2410,19 @@ stage.addEventListener("click", (event) => {
     const option = step.options.find((item) => item.key === flowOption.dataset.flowOption);
     if (!option) return;
 
-    state.choiceFlow.picks.push({
-      key: option.skip ? "noWear" : option.key,
+    const pick = {
+      key: option.skip ? "noWear" : option.imageKey || option.key,
       title: option.title,
       label: step.resultLabel,
+      phrase: option.phrase,
+      topic: option.topic,
       skip: Boolean(option.skip),
-    });
+    };
+    state.choiceFlow.picks.push(pick);
+    if (state.choiceFlow.type === "activity" && step.key === "participation") {
+      const activityPick = state.choiceFlow.picks.find((item) => item.label === "활동");
+      state.choiceFlow.summary = `${activityPick?.topic || "이 활동은"} ${option.sentence}.`;
+    }
     counts.choice += 1;
     counts.expression += 1;
     speak(option.speak);
