@@ -176,7 +176,7 @@ const mainMenus = [
   { key: "seat", title: "자리 고르기", prompt: "앉을 자리를 골라요.", activity: "choice", choiceEntry: "seat", focus: "선택" },
   { key: "activity", title: "활동 고르기", prompt: "하고 싶은 활동을 골라요.", activity: "choice", choiceEntry: "activity", focus: "선택" },
   { key: "safety", title: "생활 안전", prompt: "안전한 행동을 골라요.", activity: "safety", focus: "안전" },
-  { key: "shield", title: "말하기 연습", prompt: "필요한 말을 골라요.", activity: "shield", focus: "도움" },
+  { key: "shield", title: "소통 연습", prompt: "필요한 말과 함께하는 말을 골라요.", activity: "shield", focus: "소통" },
 ];
 
 const foodFlowSteps = [
@@ -487,6 +487,34 @@ const safetyScenes = [
       { text: "바로 보내요", kind: "danger", correct: false },
     ],
   },
+  {
+    key: "helpFriendSafety",
+    imageKey: "helpFriendSafety",
+    title: "친구 도와주기",
+    visual: "친구가 물건을 떨어뜨렸어요.",
+    story: "친구가 무거운 물건을 들다가 떨어뜨렸어요. 나도 친구를 도울 수 있어요.",
+    question: "친구를 도울 때 어떻게 할까요?",
+    answerText: "좋은 방법: 먼저 도와줄까 물어보고, 필요하면 선생님께 같이 말해요.",
+    answers: [
+      { text: "도와줄까? 물어봐요", kind: "respect", correct: true },
+      { text: "선생님께 같이 말해요", kind: "help", correct: true },
+      { text: "그냥 지나가요", kind: "danger", correct: false },
+    ],
+  },
+  {
+    key: "bathroomPrivacy",
+    imageKey: "bathroomPrivacy",
+    title: "화장실 문 닫기",
+    visual: "화장실을 사용할 때는 내 몸을 지켜요.",
+    story: "화장실을 사용할 때는 내 몸이 보이지 않도록 문을 닫아요. 내 몸은 소중해요.",
+    question: "화장실을 사용할 때 어떻게 할까요?",
+    answerText: "좋은 방법: 화장실 문을 닫고, 도움이 필요하면 선생님께 말해요.",
+    answers: [
+      { text: "문을 닫아요", kind: "safe", correct: true },
+      { text: "필요하면 선생님께 말해요", kind: "help", correct: true },
+      { text: "문을 열어 둬요", kind: "danger", correct: false },
+    ],
+  },
 ];
 
 const shieldScenes = [
@@ -620,6 +648,48 @@ const shieldScenes = [
       { text: "기다릴게요", correct: true },
       { text: "먼저 해도 될까요?", correct: true },
       { text: "세치기", correct: false },
+    ],
+  },
+  {
+    key: "waitTurnSpeech",
+    group: "함께하는 말",
+    title: "기다리기",
+    easy: "기다릴게요.",
+    text: "친구가 먼저 하고 있어요. 내 차례를 기다려야 해요.",
+    question: "내 차례가 아닐 때 어떤 말을 할까요?",
+    answerText: "좋은 방법: 기다릴게요, 끝나면 할래요라고 말해요.",
+    answers: [
+      { text: "기다릴게요", correct: true },
+      { text: "끝나면 할래요", correct: true },
+      { text: "밀고 들어가요", correct: false },
+    ],
+  },
+  {
+    key: "apologySpeech",
+    group: "함께하는 말",
+    title: "미안한 마음",
+    easy: "미안해요.",
+    text: "친구와 살짝 부딪혔어요.",
+    question: "실수했을 때 어떤 말을 할까요?",
+    answerText: "좋은 방법: 미안해요라고 말하고 친구가 괜찮은지 물어봐요.",
+    answers: [
+      { text: "미안해요", correct: true },
+      { text: "괜찮아요?", correct: true },
+      { text: "네가 잘못했어", correct: false },
+    ],
+  },
+  {
+    key: "praiseSpeech",
+    group: "함께하는 말",
+    title: "칭찬하기",
+    easy: "잘했어요.",
+    text: "친구가 활동을 열심히 했어요.",
+    question: "친구에게 어떤 말을 해 줄까요?",
+    answerText: "좋은 방법: 잘했어요, 멋져요라고 말하며 친구를 존중해요.",
+    answers: [
+      { text: "잘했어요", correct: true },
+      { text: "멋져요", correct: true },
+      { text: "못했어요", correct: false },
     ],
   },
 ];
@@ -933,21 +1003,38 @@ function illustration(name) {
     "ansAskFirst",
     "ansAskHelp",
     "ansAskPermission",
+    "ansAfterFinish",
+    "ansAreYouOkay",
+    "ansAskBathroomHelp",
+    "ansAskHelpFriend",
+    "ansBlameFriend",
+    "ansCloseDoor",
     "ansCutLine",
     "ansDontFollow",
     "ansFollowStranger",
+    "ansGoodJob",
+    "ansGreatWork",
     "ansKeepTalking",
     "ansNoPhoto",
+    "ansOpenDoor",
+    "ansPassBy",
+    "ansPushIn",
+    "ansPutDown",
     "ansRespectNo",
     "ansRunAway",
     "ansSecretTake",
     "ansSilentPhoto",
+    "ansSorry",
     "ansStaySilent",
     "ansStop",
     "ansTellFamily",
     "ansTellTeacher",
+    "ansTellTeacherTogether",
     "ansUseNoAsk",
+    "ansWaitPatiently",
     "ansWaitTurn",
+    "apologySpeech",
+    "bathroomPrivacy",
     "bibimbap",
     "bread",
     "cargoPants",
@@ -1051,6 +1138,7 @@ function illustration(name) {
     "evacuationHide",
     "evacuationReturn",
     "friendMedicine",
+    "helpFriendSafety",
     "iceCream",
     "joinActivity",
     "joinGroup",
@@ -1066,6 +1154,8 @@ function illustration(name) {
     "seatWindow",
     "successHappy",
     "trafficSafety",
+    "waitTurnSpeech",
+    "praiseSpeech",
   ]);
 
   const imageAssetName = imageAssetAliases[name] || name;
@@ -1461,6 +1551,12 @@ function answerVisual(text, kind = "") {
     "가족에게 물어봐요": "ansTellFamily",
     "메시지를 삭제해요": "deleteMessage",
     "바로 보내요": "phonePrivacy",
+    "도와줄까? 물어봐요": "ansAskHelpFriend",
+    "선생님께 같이 말해요": "ansTellTeacherTogether",
+    "그냥 지나가요": "ansPassBy",
+    "문을 닫아요": "ansCloseDoor",
+    "필요하면 선생님께 말해요": "ansAskBathroomHelp",
+    "문을 열어 둬요": "ansOpenDoor",
     "안 돼요": "ansStop",
     "먼저 물어봐요": "ansAskPermission",
     "싫어요": "ansStop",
@@ -1469,9 +1565,17 @@ function answerVisual(text, kind = "") {
     "알겠어": "ansRespectNo",
     "멈출게요": "ansRespectNo",
     "계속 말해요": "ansKeepTalking",
-    "기다릴게요": "ansWaitTurn",
+    "기다릴게요": "ansWaitPatiently",
+    "끝나면 할래요": "ansAfterFinish",
+    "밀고 들어가요": "ansPushIn",
     "먼저 해도 될까요?": "ansAskFirst",
     "세치기": "ansCutLine",
+    "미안해요": "ansSorry",
+    "괜찮아요?": "ansAreYouOkay",
+    "네가 잘못했어": "ansBlameFriend",
+    "잘했어요": "ansGoodJob",
+    "멋져요": "ansGreatWork",
+    "못했어요": "ansPutDown",
     "그냥 지켜봐요": "ansStaySilent",
     "그냥 참아요": "ansStaySilent",
     "저는 이게 좋아요": "likeChoice",
@@ -1722,7 +1826,20 @@ function shieldScore(text, isCorrect) {
       "잘 모르겠어요",
     ].includes(text)
   ) score.help = 1;
-  if (["먼저 물어봐요", "알겠어", "멈출게요", "기다릴게요", "먼저 해도 될까요?"].includes(text)) score.respect = 1;
+  if (
+    [
+      "먼저 물어봐요",
+      "알겠어",
+      "멈출게요",
+      "기다릴게요",
+      "먼저 해도 될까요?",
+      "끝나면 할래요",
+      "미안해요",
+      "괜찮아요?",
+      "잘했어요",
+      "멋져요",
+    ].includes(text)
+  ) score.respect = 1;
   return score;
 }
 
@@ -2123,9 +2240,14 @@ function renderSafety() {
   stage.appendChild(feedback);
 }
 
+function communicationGroup(scene) {
+  if (scene.group) return scene.group;
+  return scene.key === "respect" ? "함께하는 말" : "나를 지키는 말";
+}
+
 function renderShield() {
   if (state.index >= shieldScenes.length) {
-    renderReviewSummary("말하기 연습 복습", "싫을 때 말하기, 도움 요청하기, 친구의 말 존중하기를 연습했어요.", shieldScenes);
+    renderReviewSummary("소통 연습 복습", "나를 지키는 말과 함께하는 말을 연습했어요.", shieldScenes);
     return;
   }
 
@@ -2134,11 +2256,13 @@ function renderShield() {
   const isLastScene = state.index === shieldScenes.length - 1;
   const selectedAnswer = getScoredAnswer("shield");
   const helpPracticeDone = Boolean(state.scoredAnswers.helpPractice[questionScoreKey("helpPractice")]);
-  focusWord.textContent = scene.key === "respect" ? "존중" : "도움";
+  const sceneGroup = communicationGroup(scene);
+  const isTogetherScene = sceneGroup === "함께하는 말";
+  focusWord.textContent = isTogetherScene ? "존중" : "도움";
   state.bellTaps = helpPracticeDone ? 3 : 0;
   stage.innerHTML = `
     <div class="activity-title">
-      <h2>싫어요·도와주세요 연습</h2>
+      <h2>소통 연습</h2>
       <p class="prompt">${isLastScene ? "다음 카드를 누르면 학습을 완료합니다." : state.mode === "easy" ? "말해요." : "필요한 말을 골라요."}</p>
       ${readButton(`${scene.title}. ${sceneText}`)}
     </div>
@@ -2146,6 +2270,7 @@ function renderShield() {
     <div class="scene">
       <div class="scene-art">${illustration(scene.key)}</div>
       <div class="scene-copy">
+        <span class="scene-group">${sceneGroup}</span>
         ${state.mode === "easy" ? "" : `<strong>${scene.title}</strong>`}
         <p>${sceneText}</p>
         ${state.mode === "story" ? `<div class="story-question">${scene.question}</div>` : ""}
@@ -2156,15 +2281,15 @@ function renderShield() {
         .map((answer) => (typeof answer === "string" ? { text: answer, correct: true } : answer))
         .map(
           (answer) =>
-            `<button class="pill answer-card ${answer.correct ? (scene.key === "respect" ? "respect" : "help") : "danger"} ${selectedAnswer?.text === answer.text ? "selected" : ""}" data-shield="${answer.text}" data-correct="${answer.correct}" type="button">
+            `<button class="pill answer-card ${answer.correct ? (isTogetherScene ? "respect" : "help") : "danger"} ${selectedAnswer?.text === answer.text ? "selected" : ""}" data-shield="${answer.text}" data-correct="${answer.correct}" type="button">
               <span class="answer-text">${answer.text}</span>
-              ${answerVisual(answer.text, answer.correct ? (scene.key === "respect" ? "respect" : "help") : "danger")}
+              ${answerVisual(answer.text, answer.correct ? (isTogetherScene ? "respect" : "help") : "danger")}
             </button>`,
         )
         .join("")}
     </div>
     ${
-      scene.key === "respect"
+      isTogetherScene
         ? ""
         : `<div class="help-practice" data-help-practice data-complete="${helpPracticeDone ? "true" : "false"}">
             <button class="bell" data-help-bell type="button">${bellIcon()}<span>도움 벨</span></button>
@@ -2493,7 +2618,7 @@ stage.addEventListener("click", (event) => {
       correct: isCorrect,
       score: shieldScore(shield.dataset.shield, isCorrect),
     });
-    if (changed) addRecord(`말하기 연습: ${shield.dataset.shield}`);
+    if (changed) addRecord(`소통 연습: ${shield.dataset.shield}`);
     setFeedback(isCorrect ? `${shield.dataset.shield}.` : "안 돼요. 다시 골라봐요.", isCorrect ? "좋아요" : "안돼요", isCorrect ? "positive" : "warning");
     renderShield();
   }
