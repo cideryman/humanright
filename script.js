@@ -20,13 +20,13 @@ const counts = {
 };
 
 const state = {
-  activity: "choice",
+  activity: "home",
   mode: "story",
   index: 0,
   bellTaps: 0,
   choiceCategory: null,
   choiceSubcategory: null,
-  choiceFlow: { type: "food", step: 0, picks: [] },
+  choiceFlow: null,
   choiceSelections: {},
   scoredAnswers: {
     safety: {},
@@ -58,6 +58,10 @@ const choiceCategories = [
       { key: "ramen", title: "라면", speak: "라면을 골랐어요." },
       { key: "udon", title: "우동", speak: "우동을 골랐어요." },
       { key: "kimbap", title: "김밥", speak: "김밥을 골랐어요." },
+      { key: "friedRice", title: "볶음밥", speak: "볶음밥을 골랐어요." },
+      { key: "curryRice", title: "카레라이스", speak: "카레라이스를 골랐어요." },
+      { key: "porkCutlet", title: "돈가스", speak: "돈가스를 골랐어요." },
+      { key: "soupRice", title: "국밥", speak: "국밥을 골랐어요." },
     ],
   },
   {
@@ -154,8 +158,21 @@ const choiceCategories = [
       { key: "music", title: "음악을 들을래요", speak: "음악을 들을래요." },
       { key: "walk", title: "산책을 할래요", speak: "산책을 할래요." },
       { key: "game", title: "놀고 싶어요", speak: "놀고 싶어요." },
+      { key: "computer", title: "컴퓨터 할래요", speak: "컴퓨터 할래요." },
+      { key: "badminton", title: "배드민턴 할래요", speak: "배드민턴 할래요." },
+      { key: "dance", title: "춤을 출래요", speak: "춤을 출래요." },
+      { key: "puzzle", title: "퍼즐 맞출래요", speak: "퍼즐 맞출래요." },
     ],
   },
+];
+
+const mainMenus = [
+  { key: "food", title: "음식 고르기", prompt: "먹고 마실 것을 골라요.", activity: "choice", choiceEntry: "food", focus: "선택" },
+  { key: "clothes", title: "옷 고르기", prompt: "입을 옷을 골라요.", activity: "choice", choiceEntry: "clothes", focus: "선택" },
+  { key: "seat", title: "자리 고르기", prompt: "앉을 자리를 골라요.", activity: "choice", choiceEntry: "seat", focus: "선택" },
+  { key: "activity", title: "활동 고르기", prompt: "하고 싶은 활동을 골라요.", activity: "choice", choiceEntry: "activity", focus: "선택" },
+  { key: "safety", title: "생활 안전", prompt: "안전한 행동을 골라요.", activity: "safety", focus: "안전" },
+  { key: "shield", title: "말하기 연습", prompt: "필요한 말을 골라요.", activity: "shield", focus: "도움" },
 ];
 
 const foodFlowSteps = [
@@ -176,6 +193,10 @@ const foodFlowSteps = [
       { key: "juice", title: "주스", speak: "주스를 골랐어요." },
       { key: "milk", title: "우유", speak: "우유를 골랐어요." },
       { key: "tea", title: "차", speak: "차를 골랐어요." },
+      { key: "coffee", title: "커피", speak: "커피를 골랐어요." },
+      { key: "cola", title: "콜라", speak: "콜라를 골랐어요." },
+      { key: "sportsDrink", title: "이온음료", speak: "이온음료를 골랐어요." },
+      { key: "soyMilk", title: "두유", speak: "두유를 골랐어요." },
     ],
   },
   {
@@ -297,9 +318,10 @@ const safetyScenes = [
     visual: "길을 잃어서 어디로 가야 할지 모르겠어요.",
     story: "길을 잃거나 무서운 일이 생겼어요. 이럴 때 어떻게 하면 좋을까요?",
     question: "도움이 필요할 때 어떤 말을 할까요?",
-    answerText: "좋은 방법: 안전한 곳에서 도와주세요라고 말해요.",
+    answerText: "좋은 방법: 안전한 곳에서 도와주세요라고 말하거나 경찰관, 경찰서에 물어봐요.",
     answers: [
       { text: "도와주세요", kind: "help", correct: true },
+      { text: "경찰관이나 경찰서에 물어봐요", kind: "help", correct: true },
       { text: "그냥 뛰어가요", kind: "danger", correct: false },
       { text: "아무에게나 따라가요", kind: "danger", correct: false },
     ],
@@ -500,6 +522,32 @@ function pictogram(type) {
       <path class="pic-yellow" d="M72 92h14v20H72zM124 92h14v20h-14zM176 92h14v20h-14z"></path>
       <path class="pic-line" d="M78 68a34 34 0 1 0 0 68 34 34 0 0 0 0-68M130 68a34 34 0 1 0 0 68 34 34 0 0 0 0-68M182 68a34 34 0 1 0 0 68 34 34 0 0 0 0-68"></path>
     `),
+    friedRice: bowl(
+      "pic-warm",
+      `<circle class="pic-yellow" cx="100" cy="96" r="10"></circle>
+       <circle class="pic-green" cx="132" cy="88" r="10"></circle>
+       <circle class="pic-danger" cx="160" cy="104" r="9"></circle>
+       <path class="pic-line" d="M88 116c18-10 62-10 84 0"></path>`,
+    ),
+    curryRice: bowl(
+      "pic-yellow",
+      `<path class="pic-white" d="M82 88c18-18 58-18 76 0v34H82z"></path>
+       <circle class="pic-warm" cx="164" cy="96" r="13"></circle>
+       <path class="pic-line" d="M82 88c18-18 58-18 76 0M98 108h46"></path>`,
+    ),
+    porkCutlet: base(`
+      <ellipse class="pic-white" cx="130" cy="112" rx="78" ry="38"></ellipse>
+      <path class="pic-warm" d="M72 98c20-30 92-34 116-2-8 34-96 40-116 2z"></path>
+      <path class="pic-line" d="M52 142h156M72 98c20-30 92-34 116-2-8 34-96 40-116 2zM92 104h78M98 122h62"></path>
+      <path class="pic-green" d="M178 92h24v24h-24z"></path>
+    `),
+    soupRice: bowl(
+      "pic-blue",
+      `<circle class="pic-white" cx="106" cy="98" r="16"></circle>
+       <circle class="pic-white" cx="140" cy="104" r="12"></circle>
+       <path class="pic-line" d="M82 86c14 10 76 10 96 0M96 124h70"></path>`,
+      `<path class="pic-line" d="M96 48c-12 16 12 20 0 36M132 42c-12 16 12 20 0 36M168 48c-12 16 12 20 0 36"></path>`,
+    ),
     clothes: base(`
       ${shirt("pic-green").match(/<rect[\s\S]*?<\/rect>([\s\S]*)<\/svg>/)?.[1] || ""}
     `),
@@ -604,6 +652,47 @@ function pictogram(type) {
     game: base(`
       <rect class="pic-blue" x="52" y="64" width="156" height="74" rx="30"></rect>
       <path class="pic-line" d="M52 101c0-22 16-37 38-37h80c22 0 38 15 38 37s-16 37-38 37H90c-22 0-38-15-38-37zM82 101h36M100 83v36M158 94h1M184 108h1"></path>
+    `),
+    coffee: base(`
+      <path class="pic-white" d="M76 82h94v58H76z"></path>
+      <path class="pic-warm" d="M88 96h70v28H88z"></path>
+      <path class="pic-line" d="M76 82h94v58H76zM170 94h22c18 0 18 34 0 34h-22M92 50c-12 14 12 18 0 32M124 44c-12 14 12 18 0 32M156 50c-12 14 12 18 0 32M64 148h138"></path>
+    `),
+    cola: base(`
+      <path class="pic-danger" d="M102 44h56l10 116H92z"></path>
+      <rect class="pic-white" x="98" y="90" width="64" height="30" rx="10"></rect>
+      <path class="pic-line" d="M102 44h56l10 116H92zM110 28h40v16h-40zM112 106h36M86 160h88"></path>
+    `),
+    sportsDrink: base(`
+      <path class="pic-blue" d="M100 48h60l14 108H86z"></path>
+      <path class="pic-white" d="M98 86h64v34H98z"></path>
+      <path class="pic-line" d="M100 48h60l14 108H86zM112 30h36v18h-36M118 104h24M130 92v24"></path>
+    `),
+    soyMilk: base(`
+      <path class="pic-white" d="M84 44h92v110H84z"></path>
+      <path class="pic-green" d="M98 76h64v44H98z"></path>
+      <path class="pic-line" d="M84 44h92v110H84zM84 44l18-18h92l-18 18M98 76h64v44H98zM116 98h28"></path>
+    `),
+    computer: base(`
+      <rect class="pic-blue" x="54" y="48" width="150" height="92" rx="8"></rect>
+      <rect class="pic-white" x="70" y="62" width="118" height="62" rx="6"></rect>
+      <path class="pic-line" d="M54 48h150v92H54zM92 156h76M130 140v16M88 92h84"></path>
+    `),
+    badminton: base(`
+      <circle class="pic-white" cx="88" cy="74" r="38"></circle>
+      <path class="pic-line" d="M62 48l52 52M114 48l-52 52M88 36v76M50 74h76M116 102l56 56"></path>
+      <path class="pic-warm" d="M184 54l24 42-48 8z"></path>
+      <path class="pic-line" d="M184 54l24 42-48 8zM172 76h28"></path>
+    `),
+    dance: base(`
+      <circle class="skin" cx="130" cy="46" r="18"></circle>
+      <path class="pic-green" d="M100 130c4-38 18-60 30-60s26 22 30 60z"></path>
+      <path class="pic-line" d="M112 78L74 54M148 78l38-24M114 130l-24 36M146 130l28 36M68 36l10 10M188 36l-10 10M54 90h26M180 90h26"></path>
+    `),
+    puzzle: base(`
+      <path class="pic-green" d="M58 54h64v42c14-12 34-2 34 16s-20 28-34 16v32H58z"></path>
+      <path class="pic-blue" d="M122 54h70v106h-70v-32c14 12 34 2 34-16s-20-28-34-16z"></path>
+      <path class="pic-line" d="M58 54h64v42c14-12 34-2 34 16s-20 28-34 16v32H58zM122 54h70v106h-70"></path>
     `),
     ask: base(`
       ${person(78, 58)}
@@ -745,6 +834,10 @@ function illustration(name) {
     ramen: "ramen",
     udon: "udon",
     kimbap: "kimbap",
+    friedRice: "friedRice",
+    curryRice: "curryRice",
+    porkCutlet: "porkCutlet",
+    soupRice: "soupRice",
     clothes: "clothes",
     tshirt: "tshirtPlain",
     tshirtGreen: "tshirtGreen",
@@ -786,6 +879,14 @@ function illustration(name) {
     music: "music",
     walk: "walk",
     game: "game",
+    computer: "computer",
+    badminton: "badminton",
+    dance: "dance",
+    puzzle: "puzzle",
+    coffee: "coffee",
+    cola: "cola",
+    sportsDrink: "sportsDrink",
+    soyMilk: "soyMilk",
     safe: "ask",
     danger: "warning",
     help: "help",
@@ -1092,6 +1193,7 @@ function answerVisual(text, kind = "") {
     "상대에게 하지 말라고 말해요": "ansStop",
     "혼자 참아요": "ansStaySilent",
     "도와주세요": "ansAskHelp",
+    "경찰관이나 경찰서에 물어봐요": "help",
     "그냥 뛰어가요": "ansRunAway",
     "아무에게나 따라가요": "ansFollowStranger",
     "따라가지 않아요": "ansDontFollow",
@@ -1159,6 +1261,59 @@ function bellIcon() {
 
 function readButton(text) {
   return `<button class="listen" data-speak="${text}" type="button" aria-label="읽어주기">${speakerIcon()}<span>듣기</span></button>`;
+}
+
+function mainMenuIcon(type) {
+  const icons = {
+    food: `
+      <svg class="menu-icon food" viewBox="0 0 180 150" aria-hidden="true">
+        <circle class="menu-sun" cx="138" cy="32" r="16"></circle>
+        <ellipse class="menu-white" cx="88" cy="96" rx="58" ry="30"></ellipse>
+        <path class="menu-warm" d="M44 92c8 40 80 42 90 0z"></path>
+        <path class="menu-line" d="M34 90c0 42 108 42 108 0M34 90c0-18 108-18 108 0M58 76c10-12 22 12 32 0s22 12 32 0M136 64h24M148 52v48"></path>
+      </svg>
+    `,
+    clothes: `
+      <svg class="menu-icon clothes" viewBox="0 0 180 150" aria-hidden="true">
+        <path class="menu-green" d="M42 42l28-18h40l28 18 26 32-30 18-10-18v54H56V74L46 92 16 74z"></path>
+        <path class="menu-line" d="M42 42l28-18h40l28 18 26 32-30 18-10-18v54H56V74L46 92 16 74zM70 24c8 14 32 14 40 0"></path>
+        <path class="menu-heart" d="M90 78c-14-14-34 4-15 20l15 13 15-13c19-16-1-34-15-20z"></path>
+      </svg>
+    `,
+    seat: `
+      <svg class="menu-icon seat" viewBox="0 0 180 150" aria-hidden="true">
+        <rect class="menu-blue" x="54" y="28" width="72" height="58" rx="12"></rect>
+        <rect class="menu-warm" x="42" y="82" width="96" height="30" rx="12"></rect>
+        <path class="menu-line" d="M54 28h72v58H54zM42 82h96v30H42zM58 112v26M122 112v26M78 58h4M100 58h4M80 70c8 8 20 8 28 0"></path>
+      </svg>
+    `,
+    activity: `
+      <svg class="menu-icon activity" viewBox="0 0 180 150" aria-hidden="true">
+        <circle class="menu-face" cx="58" cy="44" r="18"></circle>
+        <path class="menu-green" d="M28 120c4-34 16-54 30-54s26 20 30 54z"></path>
+        <path class="menu-blue" d="M110 34h48v48h-48z"></path>
+        <path class="menu-line" d="M42 74L18 92M74 74l26 18M110 34h48v48h-48zM120 68l12-14 8 8 12-18M106 116h52"></path>
+        <circle class="menu-sun" cx="148" cy="106" r="16"></circle>
+      </svg>
+    `,
+    safety: `
+      <svg class="menu-icon safety" viewBox="0 0 180 150" aria-hidden="true">
+        <path class="menu-blue" d="M90 18l54 20v34c0 34-22 58-54 74-32-16-54-40-54-74V38z"></path>
+        <path class="menu-line" d="M90 18l54 20v34c0 34-22 58-54 74-32-16-54-40-54-74V38zM64 76l18 18 38-44"></path>
+        <circle class="menu-white" cx="132" cy="42" r="10"></circle>
+      </svg>
+    `,
+    shield: `
+      <svg class="menu-icon shield" viewBox="0 0 180 150" aria-hidden="true">
+        <circle class="menu-face" cx="58" cy="52" r="18"></circle>
+        <path class="menu-green" d="M30 124c4-34 16-54 28-54s24 20 28 54z"></path>
+        <rect class="menu-white" x="92" y="32" width="60" height="44" rx="14"></rect>
+        <path class="menu-line" d="M92 32h60v44h-22l-16 18V76H92zM106 54h32M70 82l22 18M46 82l-22 18"></path>
+        <path class="menu-heart" d="M122 108c-10-10-24 2-11 14l11 10 11-10c13-12-1-24-11-14z"></path>
+      </svg>
+    `,
+  };
+  return icons[type] || icons.activity;
 }
 
 function addRecord(text) {
@@ -1345,10 +1500,34 @@ function getActiveChoiceSteps() {
   return state.choiceFlow.type === "food" ? foodFlowSteps : clothesFlowSteps;
 }
 
+function renderHome() {
+  focusWord.textContent = "시작";
+  stage.innerHTML = `
+    <div class="activity-title home-title">
+      <h2>오늘 어떤 활동을 할까요?</h2>
+      <p class="prompt">하고 싶은 학습을 하나 골라요.</p>
+      ${readButton("오늘 어떤 활동을 할까요? 하고 싶은 학습을 하나 골라요.")}
+    </div>
+    <div class="menu-grid">
+      ${mainMenus
+        .map(
+          (menu) => `
+            <button class="home-card" data-main-menu="${menu.key}" type="button">
+              ${mainMenuIcon(menu.key)}
+              <strong>${menu.title}</strong>
+              <span>${menu.prompt}</span>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+  stage.appendChild(feedback);
+}
+
 function renderChoiceSummary() {
   const isFood = state.choiceFlow.type === "food";
   const title = isFood ? "내가 고른 음식이에요" : "내가 고른 것이에요";
-  const actionText = isFood ? "다른 것도 골라볼래요" : "다시 처음으로";
   const visiblePicks = state.choiceFlow.picks.filter((pick) => !pick.skip);
   const steps = getActiveChoiceSteps();
   focusWord.textContent = "선택";
@@ -1376,7 +1555,33 @@ function renderChoiceSummary() {
         )
         .join("")}
     </div>
-    <button class="back-button" data-choice-reset type="button">${actionText}</button>
+    <button class="back-button complete-button" data-main-home type="button">완료</button>
+  `;
+  stage.appendChild(feedback);
+}
+
+function renderDirectChoiceSummary(category, picked) {
+  const title = category.key === "seat" ? "내가 고른 자리예요" : "내가 고른 활동이에요";
+  focusWord.textContent = "선택";
+  stage.innerHTML = `
+    <div class="activity-title">
+      <h2>${title}</h2>
+      <p class="prompt">내가 스스로 골랐어요.</p>
+      ${readButton(`${title}. 내가 스스로 골랐어요.`)}
+    </div>
+    ${progressMarkup(1, 1, "진행")}
+    ${scoreSummaryMarkup([
+      { label: "스스로 결정", value: "1번", kind: "choice" },
+      { label: "고른 카드", value: "1개", kind: "safe" },
+    ])}
+    <div class="card-grid summary-grid">
+      <article class="big-card summary-card">
+        ${illustration(picked.key)}
+        <strong>${picked.title}</strong>
+        <span>${category.title}</span>
+      </article>
+    </div>
+    <button class="back-button complete-button" data-main-home type="button">완료</button>
   `;
   stage.appendChild(feedback);
 }
@@ -1422,6 +1627,10 @@ function renderChoice() {
   const selectedCategory = choiceCategories.find((category) => category.key === state.choiceCategory);
   if (selectedCategory) {
     const picked = state.choiceSelections[selectedCategory.key];
+    if (picked) {
+      renderDirectChoiceSummary(selectedCategory, picked);
+      return;
+    }
     focusWord.textContent = "선택";
     stage.innerHTML = `
       <div class="activity-title">
@@ -1561,6 +1770,7 @@ function renderReviewSummary(title, message, scenes) {
     <div class="review-list">
       ${scenes.map((scene) => reviewCard(scene)).join("")}
     </div>
+    <button class="back-button complete-button" data-main-home type="button">완료</button>
   `;
   stage.appendChild(feedback);
 }
@@ -1662,6 +1872,7 @@ function renderShield() {
 }
 
 function render() {
+  if (state.activity === "home") renderHome();
   if (state.activity === "choice") renderChoice();
   if (state.activity === "safety") renderSafety();
   if (state.activity === "shield") renderShield();
@@ -1697,17 +1908,51 @@ function openChoiceEntry(choiceEntry) {
   setActiveActivityButton("choice", choiceEntry);
 }
 
+function goHome() {
+  state.activity = "home";
+  state.index = 0;
+  state.bellTaps = 0;
+  state.safetyAnswer = null;
+  state.choiceCategory = null;
+  state.choiceSubcategory = null;
+  state.choiceFlow = null;
+  render();
+  moveToQuestionStart();
+}
+
+function startMainMenu(menuKey) {
+  const menu = mainMenus.find((item) => item.key === menuKey);
+  if (!menu) return;
+  if (menu.activity === "choice") {
+    openChoiceEntry(menu.choiceEntry);
+  } else {
+    state.activity = menu.activity;
+    state.index = 0;
+    state.bellTaps = 0;
+    state.safetyAnswer = null;
+    state.choiceCategory = null;
+    state.choiceSubcategory = null;
+    state.choiceFlow = null;
+    setActiveActivityButton(menu.activity);
+  }
+  speak(`${menu.title}. ${menu.prompt}`);
+  addRecord(`활동 시작: ${menu.title}`);
+  render();
+  moveToQuestionStart();
+}
+
 function updateFacilitator() {
+  const isHome = state.activity === "home";
   const isChoice = state.activity === "choice";
   const isSafetyComplete = state.activity === "safety" && state.index >= safetyScenes.length;
   const isShieldComplete = state.activity === "shield" && state.index >= shieldScenes.length;
   const isComplete = isSafetyComplete || isShieldComplete;
 
-  facilitator.hidden = isChoice;
-  acceptExpressionButton.hidden = isChoice;
-  prevCardButton.hidden = isChoice || isComplete;
-  nextCardButton.hidden = isChoice;
-  nextCardButton.textContent = isComplete ? "처음으로" : "다음 카드";
+  facilitator.hidden = isHome || isChoice || isComplete;
+  acceptExpressionButton.hidden = isHome || isChoice || isComplete;
+  prevCardButton.hidden = isHome || isChoice || isComplete;
+  nextCardButton.hidden = isHome || isChoice || isComplete;
+  nextCardButton.textContent = "다음 카드";
 }
 
 function moveToQuestionStart() {
@@ -1726,23 +1971,26 @@ function moveToChoiceStart() {
   });
 }
 
-document.querySelector(".segmented").addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-activity]");
-  if (!button) return;
-  if (button.dataset.activity === "choice") {
-    openChoiceEntry(button.dataset.choiceEntry || "food");
-  } else {
-    state.activity = button.dataset.activity;
-    state.index = 0;
-    state.safetyAnswer = null;
-    state.choiceCategory = null;
-    state.choiceSubcategory = null;
-    state.choiceFlow = null;
-    setActiveActivityButton(button.dataset.activity);
-  }
-  render();
-  moveToQuestionStart();
-});
+const segmented = document.querySelector(".segmented");
+if (segmented) {
+  segmented.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-activity]");
+    if (!button) return;
+    if (button.dataset.activity === "choice") {
+      openChoiceEntry(button.dataset.choiceEntry || "food");
+    } else {
+      state.activity = button.dataset.activity;
+      state.index = 0;
+      state.safetyAnswer = null;
+      state.choiceCategory = null;
+      state.choiceSubcategory = null;
+      state.choiceFlow = null;
+      setActiveActivityButton(button.dataset.activity);
+    }
+    render();
+    moveToQuestionStart();
+  });
+}
 
 const modeSwitch = document.querySelector(".mode-switch");
 if (modeSwitch) {
@@ -1764,6 +2012,8 @@ stage.addEventListener("click", (event) => {
   if (interactionLocked) return;
 
   const speaker = event.target.closest("[data-speak]");
+  const mainMenu = event.target.closest("[data-main-menu]");
+  const mainHome = event.target.closest("[data-main-home]");
   const choiceCategory = event.target.closest("[data-choice-category]");
   const choiceSubcategory = event.target.closest("[data-choice-subcategory]");
   const choiceOption = event.target.closest("[data-choice-option]");
@@ -1774,8 +2024,19 @@ stage.addEventListener("click", (event) => {
   const shield = event.target.closest("[data-shield]");
   const helpBell = event.target.closest("[data-help-bell]");
 
-  if (speaker && !choiceCategory && !choiceSubcategory && !choiceOption && !flowOption) {
+  if (speaker && !mainMenu && !mainHome && !choiceCategory && !choiceSubcategory && !choiceOption && !flowOption) {
     speak(speaker.dataset.speak);
+    return;
+  }
+
+  if (mainHome) {
+    goHome();
+    return;
+  }
+
+  if (mainMenu) {
+    lockInteraction(300);
+    startMainMenu(mainMenu.dataset.mainMenu);
     return;
   }
 
@@ -1956,17 +2217,12 @@ prevCardButton.addEventListener("click", () => {
 
 nextCardButton.addEventListener("click", () => {
   if (state.activity === "safety" && state.index >= safetyScenes.length) {
-    state.index = 0;
-    state.safetyAnswer = null;
-    render();
-    moveToQuestionStart();
+    goHome();
     return;
   }
 
   if (state.activity === "shield" && state.index >= shieldScenes.length) {
-    state.index = 0;
-    render();
-    moveToQuestionStart();
+    goHome();
     return;
   }
 
@@ -1989,7 +2245,6 @@ document.querySelector("#resetRecord").addEventListener("click", () => {
   records.length = 0;
   state.index = 0;
   state.safetyAnswer = null;
-  openChoiceEntry("food");
   state.choiceSelections = {};
   state.scoredAnswers = {
     safety: {},
@@ -1997,7 +2252,7 @@ document.querySelector("#resetRecord").addEventListener("click", () => {
     helpPractice: {},
   };
   updateCounts();
-  render();
+  goHome();
 });
 
 document.querySelector("#showLog").addEventListener("click", () => {

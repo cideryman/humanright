@@ -246,6 +246,100 @@ h1 {
   gap: 20px;
 }
 
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(170px, 1fr));
+  gap: 18px;
+}
+
+.home-card {
+  min-height: 260px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 20px;
+  border: 3px solid var(--line);
+  border-radius: 22px;
+  background: #fffef9;
+  box-shadow: 0 10px 0 rgba(23, 33, 31, 0.1);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease;
+}
+
+.home-card:active {
+  transform: translateY(5px);
+  box-shadow: 0 5px 0 rgba(23, 33, 31, 0.12);
+}
+
+.home-card:hover,
+.home-card:focus-visible {
+  border-color: var(--choice);
+}
+
+.home-card strong {
+  font-size: clamp(28px, 3vw, 42px);
+  letter-spacing: 0;
+  text-align: center;
+}
+
+.home-card span {
+  color: var(--muted);
+  font-size: 19px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.menu-icon {
+  width: min(180px, 100%);
+  height: 150px;
+}
+
+.menu-line {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.menu-white {
+  fill: #fff;
+}
+
+.menu-green {
+  fill: #7ad48b;
+}
+
+.menu-blue {
+  fill: #8fd3de;
+}
+
+.menu-warm {
+  fill: #ffd166;
+}
+
+.menu-sun {
+  fill: #ffd166;
+  stroke: var(--ink);
+  stroke-width: 5;
+}
+
+.menu-face {
+  fill: #ffd0a6;
+  stroke: var(--ink);
+  stroke-width: 5;
+}
+
+.menu-heart {
+  fill: #f28b82;
+  stroke: var(--ink);
+  stroke-width: 5;
+  stroke-linejoin: round;
+}
+
 .card-grid.two {
   grid-template-columns: repeat(2, minmax(220px, 1fr));
 }
@@ -1106,6 +1200,10 @@ h1 {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(160px, 1fr));
+  }
+
   .card-grid,
   .answers.four {
     grid-template-columns: repeat(2, minmax(140px, 1fr));
@@ -1201,6 +1299,32 @@ h1 {
 
   .big-card {
     min-height: 320px;
+  }
+
+  .menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .home-card {
+    min-height: 190px;
+    gap: 8px;
+    padding: 12px 8px;
+    border-radius: 18px;
+  }
+
+  .home-card strong {
+    font-size: clamp(22px, 6vw, 30px);
+    line-height: 1.14;
+  }
+
+  .home-card span {
+    font-size: 15px;
+    line-height: 1.25;
+  }
+
+  .menu-icon {
+    height: 104px;
   }
 
   .card-grid,
