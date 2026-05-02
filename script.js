@@ -21,12 +21,12 @@ const counts = {
 
 const state = {
   activity: "choice",
-  mode: "visual",
+  mode: "story",
   index: 0,
   bellTaps: 0,
   choiceCategory: null,
   choiceSubcategory: null,
-  choiceFlow: null,
+  choiceFlow: { type: "food", step: 0, picks: [] },
   choiceSelections: {},
   scoredAnswers: {
     safety: {},
@@ -1323,6 +1323,23 @@ function scoreSummaryMarkup(items) {
   `;
 }
 
+function progressMarkup(current, total, label = "진행") {
+  const safeTotal = Math.max(1, total);
+  const safeCurrent = Math.min(Math.max(0, current), safeTotal);
+  const percent = Math.round((safeCurrent / safeTotal) * 100);
+  return `
+    <div class="progress-card" aria-label="${label} ${safeCurrent}/${safeTotal}">
+      <div class="progress-text">
+        <span>${label}</span>
+        <strong>${safeCurrent}/${safeTotal}</strong>
+      </div>
+      <div class="progress-track" aria-hidden="true">
+        <div class="progress-fill" style="width: ${percent}%"></div>
+      </div>
+    </div>
+  `;
+}
+
 function getActiveChoiceSteps() {
   if (!state.choiceFlow) return [];
   return state.choiceFlow.type === "food" ? foodFlowSteps : clothesFlowSteps;
@@ -1333,6 +1350,7 @@ function renderChoiceSummary() {
   const title = isFood ? "내가 고른 음식이에요" : "내가 고른 것이에요";
   const actionText = isFood ? "다른 것도 골라볼래요" : "다시 처음으로";
   const visiblePicks = state.choiceFlow.picks.filter((pick) => !pick.skip);
+  const steps = getActiveChoiceSteps();
   focusWord.textContent = "선택";
   stage.innerHTML = `
     <div class="activity-title">
@@ -1340,6 +1358,7 @@ function renderChoiceSummary() {
       <p class="prompt">내가 스스로 골랐어요.</p>
       ${readButton(`${title}. 내가 스스로 골랐어요.`)}
     </div>
+    ${progressMarkup(steps.length, steps.length, "진행")}
     ${scoreSummaryMarkup([
       { label: "스스로 결정", value: `${state.choiceFlow.picks.length}번`, kind: "choice" },
       { label: "고른 카드", value: `${visiblePicks.length}개`, kind: "safe" },
@@ -1377,6 +1396,7 @@ function renderChoiceFlow() {
       <p class="prompt">${step.prompt}</p>
       ${readButton(`${step.title}. ${step.prompt}`)}
     </div>
+    ${progressMarkup(state.choiceFlow.step + 1, steps.length, "진행")}
     <div class="card-grid ${state.mode === "easy" ? "two" : ""}">
       ${step.options
         .map(
@@ -1401,6 +1421,7 @@ function renderChoice() {
 
   const selectedCategory = choiceCategories.find((category) => category.key === state.choiceCategory);
   if (selectedCategory) {
+    const picked = state.choiceSelections[selectedCategory.key];
     focusWord.textContent = "선택";
     stage.innerHTML = `
       <div class="activity-title">
@@ -1408,11 +1429,12 @@ function renderChoice() {
         <p class="prompt">${selectedCategory.key === "activity" ? "하고 싶은 말을 골라요." : "하나를 골라요."}</p>
         ${readButton(`${selectedCategory.title} 고르기. 하나를 골라요.`)}
       </div>
+      ${progressMarkup(picked ? 1 : 0, 1, "진행")}
       <div class="card-grid ${state.mode === "easy" ? "two" : ""}">
         ${selectedCategory.options
           .map(
             (card) => `
-              <button class="big-card" data-choice-option="${card.key}" data-speak="${card.speak}" type="button">
+              <button class="big-card ${picked?.key === card.key ? "selected" : ""}" data-choice-option="${card.key}" data-speak="${card.speak}" type="button">
                 ${illustration(card.key)}
                 <strong>${card.title}</strong>
               </button>
@@ -1421,34 +1443,15 @@ function renderChoice() {
           .join("")}
       </div>
       ${selectedCategory.note ? `<p class="choice-note">${selectedCategory.note}</p>` : ""}
-      <button class="back-button" data-choice-back type="button">종류 다시 고르기</button>
+      <button class="back-button" data-choice-back type="button">음식 고르기로 가기</button>
     `;
     stage.appendChild(feedback);
     return;
   }
 
-  focusWord.textContent = "선택";
-  stage.innerHTML = `
-    <div class="activity-title">
-      <h2>무엇을 고를까요?</h2>
-      <p class="prompt">먼저 종류를 골라요.</p>
-      ${readButton("먼저 종류를 골라요.")}
-    </div>
-    <div class="card-grid ${state.mode === "easy" ? "two" : ""}">
-      ${choiceCategories
-        .map(
-          (card) => `
-            <button class="big-card" data-choice-category="${card.key}" data-choice-title="${card.title}" data-speak="${card.title}. ${card.text}" type="button">
-              ${illustration(card.key)}
-              <strong>${card.title}</strong>
-              ${state.mode === "easy" ? "" : `<span>${card.text}</span>`}
-            </button>
-          `,
-        )
-        .join("")}
-    </div>
-  `;
-  stage.appendChild(feedback);
+  state.choiceFlow = { type: "food", step: 0, picks: [] };
+  renderChoiceFlow();
+  return;
 }
 
 function renderCompletion(title, message) {
@@ -1540,6 +1543,7 @@ function renderReviewSummary(title, message, scenes) {
       <p class="prompt">정답과 오답을 다시 봐요.</p>
       ${readButton(`${title}. 정답과 오답을 다시 봐요.`)}
     </div>
+    ${progressMarkup(scenes.length, scenes.length, "진행")}
     ${scoreSummaryMarkup([
       { label: "답한 질문", value: `${summary.answered}/${summary.total}`, kind: "choice" },
       { label: "좋은 선택", value: `${summary.correct}개`, kind: "safe" },
@@ -1568,7 +1572,7 @@ function renderSafety() {
   }
 
   const scene = safetyScenes[state.index];
-  const sceneText = scene[state.mode];
+  const sceneText = scene[state.mode] || scene.story || scene.visual || "";
   const isLastScene = state.index === safetyScenes.length - 1;
   const selectedAnswer = getScoredAnswer("safety");
   focusWord.textContent = scene.key === "permission" || scene.key === "photoTaking" ? "존중" : "안전";
@@ -1578,6 +1582,7 @@ function renderSafety() {
       <p class="prompt">${isLastScene ? "다음 카드를 누르면 학습을 완료합니다." : state.mode === "easy" ? "골라요." : "어떻게 하면 좋을까요?"}</p>
       ${readButton(`${scene.title}. ${sceneText}`)}
     </div>
+    ${progressMarkup(state.index + 1, safetyScenes.length, "카드")}
     <div class="scene">
       <div class="scene-art">${illustration(scene.imageKey || scene.key)}</div>
       <div class="scene-copy">
@@ -1609,7 +1614,7 @@ function renderShield() {
   }
 
   const scene = shieldScenes[state.index];
-  const sceneText = state.mode === "easy" ? scene.easy : scene.text;
+  const sceneText = state.mode === "easy" ? scene.easy || scene.text : scene.text || scene.easy || "";
   const isLastScene = state.index === shieldScenes.length - 1;
   const selectedAnswer = getScoredAnswer("shield");
   const helpPracticeDone = Boolean(state.scoredAnswers.helpPractice[questionScoreKey("helpPractice")]);
@@ -1621,6 +1626,7 @@ function renderShield() {
       <p class="prompt">${isLastScene ? "다음 카드를 누르면 학습을 완료합니다." : state.mode === "easy" ? "말해요." : "필요한 말을 골라요."}</p>
       ${readButton(`${scene.title}. ${sceneText}`)}
     </div>
+    ${progressMarkup(state.index + 1, shieldScenes.length, "카드")}
     <div class="scene">
       <div class="scene-art">${illustration(scene.key)}</div>
       <div class="scene-copy">
@@ -1668,6 +1674,29 @@ function updatePressedState(selector, activeElement) {
   });
 }
 
+function setActiveActivityButton(activity, choiceEntry = "") {
+  document.querySelectorAll("[data-activity]").forEach((item) => {
+    const isActive = item.dataset.activity === activity && (activity !== "choice" || item.dataset.choiceEntry === choiceEntry);
+    item.classList.toggle("active", isActive);
+    item.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
+function openChoiceEntry(choiceEntry) {
+  state.activity = "choice";
+  state.index = 0;
+  state.safetyAnswer = null;
+  state.choiceSubcategory = null;
+  if (choiceEntry === "food" || choiceEntry === "clothes") {
+    state.choiceFlow = { type: choiceEntry, step: 0, picks: [] };
+    state.choiceCategory = null;
+  } else {
+    state.choiceFlow = null;
+    state.choiceCategory = choiceEntry;
+  }
+  setActiveActivityButton("choice", choiceEntry);
+}
+
 function updateFacilitator() {
   const isChoice = state.activity === "choice";
   const isSafetyComplete = state.activity === "safety" && state.index >= safetyScenes.length;
@@ -1700,29 +1729,36 @@ function moveToChoiceStart() {
 document.querySelector(".segmented").addEventListener("click", (event) => {
   const button = event.target.closest("button[data-activity]");
   if (!button) return;
-  state.activity = button.dataset.activity;
-  state.index = 0;
-  state.safetyAnswer = null;
-  state.choiceCategory = null;
-  state.choiceSubcategory = null;
-  state.choiceFlow = null;
-  document.querySelectorAll("[data-activity]").forEach((item) => item.classList.toggle("active", item === button));
-  updatePressedState("[data-activity]", button);
+  if (button.dataset.activity === "choice") {
+    openChoiceEntry(button.dataset.choiceEntry || "food");
+  } else {
+    state.activity = button.dataset.activity;
+    state.index = 0;
+    state.safetyAnswer = null;
+    state.choiceCategory = null;
+    state.choiceSubcategory = null;
+    state.choiceFlow = null;
+    setActiveActivityButton(button.dataset.activity);
+  }
   render();
+  moveToQuestionStart();
 });
 
-document.querySelector(".mode-switch").addEventListener("click", (event) => {
-  const button = event.target.closest("button[data-mode]");
-  if (!button) return;
-  state.mode = button.dataset.mode;
-  state.safetyAnswer = null;
-  state.choiceCategory = null;
-  state.choiceSubcategory = null;
-  state.choiceFlow = null;
-  document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", item === button));
-  updatePressedState("[data-mode]", button);
-  render();
-});
+const modeSwitch = document.querySelector(".mode-switch");
+if (modeSwitch) {
+  modeSwitch.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-mode]");
+    if (!button) return;
+    state.mode = button.dataset.mode;
+    state.safetyAnswer = null;
+    state.choiceCategory = null;
+    state.choiceSubcategory = null;
+    state.choiceFlow = null;
+    document.querySelectorAll("[data-mode]").forEach((item) => item.classList.toggle("active", item === button));
+    updatePressedState("[data-mode]", button);
+    render();
+  });
+}
 
 stage.addEventListener("click", (event) => {
   if (interactionLocked) return;
@@ -1762,9 +1798,8 @@ stage.addEventListener("click", (event) => {
   }
 
   if (choiceReset) {
-    state.choiceFlow = null;
-    state.choiceCategory = null;
-    state.choiceSubcategory = null;
+    const entry = state.choiceFlow?.type || "food";
+    openChoiceEntry(entry);
     renderChoice();
     moveToChoiceStart();
     return;
@@ -1804,8 +1839,7 @@ stage.addEventListener("click", (event) => {
   }
 
   if (choiceBack) {
-    state.choiceCategory = null;
-    state.choiceSubcategory = null;
+    openChoiceEntry("food");
     renderChoice();
     moveToChoiceStart();
     return;
@@ -1852,8 +1886,11 @@ stage.addEventListener("click", (event) => {
     }
     if (previousChoice?.title !== selectedTitle) addRecord(`${selectedTitle} 선택`);
     state.choiceSelections[state.choiceCategory] = { key: choiceOption.dataset.choiceOption, title: selectedTitle };
+    updateCounts();
+    renderChoice();
     setFeedback(`${selectedTitle}을 골랐어요.`);
     moveToChoiceStart();
+    return;
   }
 
   if (safety) {
@@ -1952,9 +1989,7 @@ document.querySelector("#resetRecord").addEventListener("click", () => {
   records.length = 0;
   state.index = 0;
   state.safetyAnswer = null;
-  state.choiceCategory = null;
-  state.choiceSubcategory = null;
-  state.choiceFlow = null;
+  openChoiceEntry("food");
   state.choiceSelections = {};
   state.scoredAnswers = {
     safety: {},
