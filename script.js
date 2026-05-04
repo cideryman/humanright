@@ -1599,23 +1599,76 @@ function answerVisual(text, kind = "") {
   return `<span class="answer-visual">${illustration(visualKey)}</span>`;
 }
 
+const forceAudioFallback = new URLSearchParams(window.location.search).get("audio") === "1";
+let currentFallbackAudio = null;
+
+function normalizeSpeechText(text) {
+  return String(text || "").replace(/\s+/g, " ").trim();
+}
+
+function audioFallbackFilename(text) {
+  let hash = 2166136261;
+  for (const char of normalizeSpeechText(text)) {
+    hash ^= char.codePointAt(0);
+    hash = Math.imul(hash, 16777619);
+  }
+  return `tts-${(hash >>> 0).toString(16).padStart(8, "0")}.mp3`;
+}
+
+function playAudioFallback(text) {
+  const normalizedText = normalizeSpeechText(text);
+  if (!normalizedText) return false;
+
+  try {
+    window.speechSynthesis?.cancel();
+    if (currentFallbackAudio) {
+      currentFallbackAudio.pause();
+      currentFallbackAudio.currentTime = 0;
+    }
+
+    currentFallbackAudio = new Audio(`./assets/audio/${audioFallbackFilename(normalizedText)}`);
+    currentFallbackAudio.onerror = () => {
+      feedback.textContent = "녹음 파일을 찾을 수 없어요.";
+    };
+    currentFallbackAudio.play().catch(() => {
+      feedback.textContent = "녹음 파일을 재생할 수 없어요.";
+    });
+    return true;
+  } catch {
+    feedback.textContent = "녹음 파일을 재생할 수 없어요.";
+    return false;
+  }
+}
+
 function speak(text) {
-  if (!("speechSynthesis" in window)) {
+  const normalizedText = normalizeSpeechText(text);
+
+  if (forceAudioFallback) {
+    playAudioFallback(normalizedText);
+    return;
+  }
+
+  if (!("speechSynthesis" in window) || !("SpeechSynthesisUtterance" in window)) {
+    if (playAudioFallback(normalizedText)) return;
     feedback.textContent = "읽어주기를 사용할 수 없어요.";
     return;
   }
 
   try {
+    if (currentFallbackAudio) {
+      currentFallbackAudio.pause();
+      currentFallbackAudio.currentTime = 0;
+    }
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(normalizedText);
     utterance.lang = "ko-KR";
     utterance.rate = 0.86;
     utterance.onerror = () => {
-      feedback.textContent = "읽어주기에 실패했어요.";
+      if (!playAudioFallback(normalizedText)) feedback.textContent = "읽어주기에 실패했어요.";
     };
     window.speechSynthesis.speak(utterance);
   } catch {
-    feedback.textContent = "읽어주기에 실패했어요.";
+    if (!playAudioFallback(normalizedText)) feedback.textContent = "읽어주기에 실패했어요.";
   }
 }
 
