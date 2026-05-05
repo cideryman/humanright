@@ -11,6 +11,7 @@
 - 소통 연습: 싫어요, 도와주세요, 기다릴게요, 미안해요, 잘했어요 등 표현 연습
 - 그림 카드: 발달장애인이 이해하기 쉬운 큰 이미지 중심 구성
 - 읽어주기: 브라우저 음성 합성 기능 활용
+- 음성 대체 파일: TTS가 동작하지 않는 기기를 위한 MP3 안내 음성 지원
 - 관찰 기록: 선택, 표현, 도움 요청, 존중 연습 횟수 기록
 - PWA: 홈 화면 추가 및 기본 캐시 지원
 
@@ -31,6 +32,21 @@ icons/
 브라우저에서 `index.html`을 열어 사용할 수 있습니다.
 
 PWA와 서비스 워커를 제대로 테스트하려면 로컬 서버 또는 GitHub Pages 같은 HTTPS 환경에서 실행하는 것을 권장합니다.
+
+## 음성 안내와 라이선스
+
+이 앱은 기본적으로 브라우저의 음성 합성 기능을 사용합니다. 일부 TV 브라우저처럼 TTS가 동작하지 않는 기기를 위해 `assets/audio/` 폴더에 MP3 대체 음성 파일을 함께 제공합니다.
+
+- MP3 대체 음성은 Windows 한국어 TTS 음성인 `Microsoft Heami Desktop(ko-KR)`로 생성했습니다.
+- `Microsoft Heami Desktop` 및 관련 음성 합성 엔진의 권리는 Microsoft에 있습니다.
+- 이 저장소의 MP3 파일은 본 인권교육 활동판 안에서 접근성 보조 목적으로 사용하기 위해 포함했습니다.
+- MP3 파일만 따로 추출해 다른 서비스, 상품, 콘텐츠에 재사용하거나 재배포하려면 Microsoft Windows/TTS 관련 사용 조건을 별도로 확인해야 합니다.
+- 외부 기관에서 폭넓게 재배포하거나 상업적으로 활용할 계획이 있다면, 직접 녹음한 음성 또는 출력물 재배포 조건이 명확한 TTS 음성으로 교체하는 것을 권장합니다.
+
+참고: Microsoft는 Windows에서 사용할 수 있는 한국어 TTS 음성으로 Heami를 안내하고 있습니다. Azure Speech TTS와 Windows 내장 TTS는 사용 조건이 다를 수 있으므로, 본 자료는 Azure TTS 출력물 권리를 Windows 내장 음성에 그대로 적용한다고 단정하지 않습니다.
+
+- Microsoft 지원: [지원되는 언어 및 음성](https://support.microsoft.com/ko-kr/windows/%EB%B6%80%EB%A1%9D-a-%EC%A7%80%EC%9B%90%EB%90%98%EB%8A%94-%EC%96%B8%EC%96%B4-%EB%B0%8F-%EC%9D%8C%EC%84%B1-4486e345-7730-53da-fcfe-55cc64300f01)
+- Microsoft Learn: [Text to speech overview](https://learn.microsoft.com/en-us/azure/ai-services/Speech-Service/text-to-speech)
 
 ## GitHub Pages 배포
 
