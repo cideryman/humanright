@@ -39,11 +39,14 @@ PWA와 서비스 워커를 제대로 테스트하려면 로컬 서버 또는 Git
 
 - MP3 대체 음성은 Windows 한국어 TTS 음성인 `Microsoft Heami Desktop(ko-KR)`로 생성했습니다.
 - `Microsoft Heami Desktop` 및 관련 음성 합성 엔진의 권리는 Microsoft에 있습니다.
-- 이 저장소의 MP3 파일은 본 인권교육 활동판 안에서 접근성 보조 목적으로 사용하기 위해 포함했습니다.
-- MP3 파일만 따로 추출해 다른 서비스, 상품, 콘텐츠에 재사용하거나 재배포하려면 Microsoft Windows/TTS 관련 사용 조건을 별도로 확인해야 합니다.
-- 외부 기관에서 폭넓게 재배포하거나 상업적으로 활용할 계획이 있다면, 직접 녹음한 음성 또는 출력물 재배포 조건이 명확한 TTS 음성으로 교체하는 것을 권장합니다.
+- 본 저장소는 비상업적 교육 및 공익 목적 사용을 전제로 합니다.
+- 이 저장소의 MP3 파일은 본 인권교육 활동판 내 접근성 보조 목적으로만 사용됩니다.
+- 본 음성 파일의 사용 가능 범위는 Microsoft Windows 및 해당 TTS 기능의 사용 조건을 따릅니다.
+- MP3 파일을 별도로 추출하여 다른 서비스, 상품, 콘텐츠에 재사용하거나 재배포하려면 관련 사용 조건을 별도로 확인해야 합니다.
+- 외부 기관에서 재배포하거나 상업적으로 활용할 경우, 직접 녹음한 음성 또는 사용 조건이 명확한 TTS 음성으로 교체할 것을 권장합니다.
+- 본 저장소의 음성 파일 사용으로 발생하는 문제에 대한 책임은 사용자에게 있습니다.
 
-참고: Microsoft는 Windows에서 사용할 수 있는 한국어 TTS 음성으로 Heami를 안내하고 있습니다. Azure Speech TTS와 Windows 내장 TTS는 사용 조건이 다를 수 있으므로, 본 자료는 Azure TTS 출력물 권리를 Windows 내장 음성에 그대로 적용한다고 단정하지 않습니다.
+참고: Microsoft는 Windows에서 사용할 수 있는 한국어 TTS 음성으로 Heami를 안내하고 있습니다. Azure Speech TTS와 Windows 내장 TTS는 사용 조건이 다를 수 있으므로, 동일한 기준을 적용하지 않습니다.
 
 - Microsoft 지원: [지원되는 언어 및 음성](https://support.microsoft.com/ko-kr/windows/%EB%B6%80%EB%A1%9D-a-%EC%A7%80%EC%9B%90%EB%90%98%EB%8A%94-%EC%96%B8%EC%96%B4-%EB%B0%8F-%EC%9D%8C%EC%84%B1-4486e345-7730-53da-fcfe-55cc64300f01)
 - Microsoft Learn: [Text to speech overview](https://learn.microsoft.com/en-us/azure/ai-services/Speech-Service/text-to-speech)
