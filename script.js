@@ -229,50 +229,24 @@ const clothesFlowSteps = [
     options: choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "pants").options,
   },
   {
-    key: "tshirt",
-    title: "반팔티 고르기",
-    prompt: "입고 싶은 반팔티를 골라요.",
-    resultLabel: "반팔티",
-    options: choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "tshirt").options,
+    key: "top",
+    title: "상의 고르기",
+    prompt: "반팔티나 후드티 중에서 골라요.",
+    resultLabel: "상의",
+    options: [
+      ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "tshirt").options,
+      ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "hoodie").options,
+    ],
   },
   {
-    key: "jumper",
-    title: "잠바 고르기",
-    prompt: "잠바를 입을지 골라요.",
-    resultLabel: "잠바",
+    key: "outer",
+    title: "외투 고르기",
+    prompt: "잠바나 조끼를 입을지 골라요.",
+    resultLabel: "외투",
     options: [
       ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "jumper").options,
-      { key: "noWear", title: "안 입을래요", speak: "잠바는 안 입을래요.", skip: true },
-    ],
-  },
-  {
-    key: "tracksuit",
-    title: "츄리닝 고르기",
-    prompt: "츄리닝을 입을지 골라요.",
-    resultLabel: "츄리닝",
-    options: [
-      ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "tracksuit").options,
-      { key: "noWear", title: "안 입을래요", speak: "츄리닝은 안 입을래요.", skip: true },
-    ],
-  },
-  {
-    key: "vest",
-    title: "조끼 고르기",
-    prompt: "조끼를 입을지 골라요.",
-    resultLabel: "조끼",
-    options: [
       ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "vest").options,
-      { key: "noWear", title: "안 입을래요", speak: "조끼는 안 입을래요.", skip: true },
-    ],
-  },
-  {
-    key: "hoodie",
-    title: "후드티 고르기",
-    prompt: "후드티를 입을지 골라요.",
-    resultLabel: "후드티",
-    options: [
-      ...choiceCategories.find((category) => category.key === "clothes").options.find((option) => option.key === "hoodie").options,
-      { key: "noWear", title: "안 입을래요", speak: "후드티는 안 입을래요.", skip: true },
+      { key: "noWear", title: "외투는 안 입을래요", speak: "외투는 안 입을래요.", skip: true },
     ],
   },
   {
@@ -2007,10 +1981,335 @@ function renderHome() {
   stage.appendChild(feedback);
 }
 
+function findPickByLabel(picks, label) {
+  return picks.find((pick) => pick.label === label && !pick.skip);
+}
+
+function findLastPickByLabels(picks, labels) {
+  for (let index = picks.length - 1; index >= 0; index -= 1) {
+    const pick = picks[index];
+    if (!pick.skip && labels.includes(pick.label)) return pick;
+  }
+
+  return null;
+}
+
+const storybookOutfitStyles = {
+  tops: {
+    default: { kind: "tshirt", name: "흰 반팔", color: "#f7f4df", light: "#fffdf0", dark: "#d7ceb2", pattern: "plain" },
+    tshirtGreen: { kind: "tshirt", name: "초록 반팔", color: "#2f9b63", light: "#54bd83", dark: "#1e7145", pattern: "plain" },
+    tshirtBlue: { kind: "tshirt", name: "파란 반팔", color: "#2368c7", light: "#4c8fe8", dark: "#174884", pattern: "plain" },
+    tshirtStripe: { kind: "tshirt", name: "줄무늬 반팔", color: "#f4f0db", light: "#fff8e4", dark: "#c65f50", pattern: "stripe" },
+    tshirtStar: { kind: "tshirt", name: "별 반팔", color: "#f1c84a", light: "#ffe37d", dark: "#b48519", pattern: "star" },
+    hoodieGreen: { kind: "hoodie", name: "초록 후드티", color: "#2f9b63", light: "#5ec488", dark: "#1f6e49", pattern: "hoodiePocket" },
+    hoodieBlue: { kind: "hoodie", name: "파란 후드티", color: "#2b6fce", light: "#5d99eb", dark: "#1d4c92", pattern: "hoodiePocket" },
+    hoodiePocket: { kind: "hoodie", name: "주머니 후드티", color: "#6f8ea9", light: "#94aec5", dark: "#4d6478", pattern: "hoodiePocket" },
+    hoodieLine: { kind: "hoodie", name: "끈 있는 후드티", color: "#5aa36d", light: "#7dc38f", dark: "#36794b", pattern: "hoodieLine" },
+  },
+  bottoms: {
+    default: { kind: "pants", name: "청바지", color: "#2e5d8c", light: "#4d7fb1", dark: "#1c3d60", pattern: "denim" },
+    jeans: { kind: "pants", name: "청바지", color: "#2d6399", light: "#5389bd", dark: "#1c4168", pattern: "denim" },
+    shorts: { kind: "shorts", name: "반바지", color: "#c79655", light: "#dfb574", dark: "#8e6333", pattern: "shorts" },
+    cargoPants: { kind: "pants", name: "카고바지", color: "#72815d", light: "#99a57c", dark: "#4f5d3c", pattern: "cargo" },
+    slacks: { kind: "pants", name: "정장바지", color: "#4a5159", light: "#6f7880", dark: "#2d3339", pattern: "crease" },
+  },
+  shoes: {
+    default: { name: "운동화", color: "#ffffff", trim: "#2e5d8c", sole: "#dfe7ec", kind: "sneakers" },
+    slippers: { name: "슬리퍼", color: "#6aa8d8", trim: "#316c9b", sole: "#d5e7f4", kind: "slippers" },
+    sneakers: { name: "운동화", color: "#ffffff", trim: "#2e5d8c", sole: "#dfe7ec", kind: "sneakers" },
+    dressShoes: { name: "구두", color: "#5d3a24", trim: "#2f2118", sole: "#2b1b12", kind: "dress" },
+  },
+  outers: {
+    jumperBlue: { kind: "jumper", name: "파란 잠바", color: "#1f5c9c", light: "#3b7fc4", dark: "#123c67", pattern: "zip" },
+    jumperZip: { kind: "jumper", name: "지퍼 잠바", color: "#243f63", light: "#47698f", dark: "#172942", pattern: "zip" },
+    jumperPocket: { kind: "jumper", name: "주머니 잠바", color: "#587b8e", light: "#7ea2b6", dark: "#3b5968", pattern: "pocket" },
+    jumperWarm: { kind: "jumper", name: "따뜻한 잠바", color: "#bd7b37", light: "#d89c56", dark: "#7b4d22", pattern: "warm" },
+    vestBlue: { kind: "vest", name: "파란 조끼", color: "#224e8a", light: "#4f7db9", dark: "#16325c", pattern: "padded" },
+    vestPocket: { kind: "vest", name: "주머니 조끼", color: "#4c6f82", light: "#789aaf", dark: "#324e5d", pattern: "pocket" },
+    vestWarm: { kind: "vest", name: "따뜻한 조끼", color: "#c78c42", light: "#e1ae68", dark: "#8b612b", pattern: "warm" },
+    vestZip: { kind: "vest", name: "지퍼 조끼", color: "#44525f", light: "#6a7a88", dark: "#2b343e", pattern: "zip" },
+  },
+};
+
+function outfitStyle(group, key) {
+  return storybookOutfitStyles[group]?.[key] || storybookOutfitStyles[group]?.default || {};
+}
+
+function storybookId(selection) {
+  return `story-${[selection.shirtKey, selection.pantsKey, selection.shoesKey, selection.outerKey || "none"]
+    .filter(Boolean)
+    .join("-")
+    .replace(/[^a-zA-Z0-9_-]/g, "")}`;
+}
+
+function storybookBackLayer(top, outer, id) {
+  if (top.kind !== "hoodie") return "";
+  const hoodVisible = !outer || outer.kind === "vest";
+  return `
+    <path d="M390 347 C395 258 448 222 512 222 C576 222 629 258 634 347 C608 317 570 299 512 299 C454 299 416 317 390 347 Z"
+      fill="${top.dark}" opacity="${hoodVisible ? "1" : "0.55"}" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M421 340 C438 290 472 270 512 270 C552 270 586 290 603 340"
+      fill="none" stroke="${top.light}" stroke-width="8" stroke-linecap="round" opacity="0.55"/>
+  `;
+}
+
+function storybookArmsSvg() {
+  return `
+    <path d="M358 425 C323 485 305 572 319 654 C324 682 344 699 366 688 C386 679 389 658 381 633 C367 585 381 504 406 453 Z"
+      fill="#f0b479" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M666 425 C701 485 719 572 705 654 C700 682 680 699 658 688 C638 679 635 658 643 633 C657 585 643 504 618 453 Z"
+      fill="#f0b479" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+  `;
+}
+
+function storybookTopPattern(top, id) {
+  if (top.pattern === "stripe") {
+    return `
+      <g clip-path="url(#${id}-torso-clip)" opacity="0.9">
+        <rect x="354" y="443" width="316" height="28" fill="${top.dark}"/>
+        <rect x="354" y="515" width="316" height="28" fill="${top.dark}"/>
+        <rect x="354" y="587" width="316" height="28" fill="${top.dark}"/>
+      </g>
+    `;
+  }
+  if (top.pattern === "star") {
+    return `
+      <path d="M512 454 L535 505 L590 510 L548 546 L560 600 L512 572 L464 600 L476 546 L434 510 L489 505 Z"
+        fill="#fff4a8" stroke="${top.dark}" stroke-width="6" stroke-linejoin="round" opacity="0.9"/>
+    `;
+  }
+  if (top.pattern === "hoodiePocket" || top.pattern === "hoodieLine") {
+    return `
+      <path d="M438 574 C464 599 560 599 586 574 L576 650 C545 671 479 671 448 650 Z"
+        fill="${top.dark}" opacity="0.34" stroke="${top.dark}" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M476 392 C488 428 504 454 512 474 C520 454 536 428 548 392"
+        fill="none" stroke="#fff7df" stroke-width="6" stroke-linecap="round" opacity="0.78"/>
+      ${top.pattern === "hoodieLine" ? `<circle cx="482" cy="490" r="6" fill="#fff7df"/><circle cx="542" cy="490" r="6" fill="#fff7df"/>` : ""}
+    `;
+  }
+  return "";
+}
+
+function storybookTopSvg(top, outer, id) {
+  const showSleeves = !outer || outer.kind === "vest";
+  const isHoodie = top.kind === "hoodie";
+  const sleevePathLeft = isHoodie
+    ? "M374 397 C330 430 313 516 319 608 C346 622 375 623 398 610 C395 544 408 483 435 435 Z"
+    : "M376 397 C339 419 322 458 316 497 C342 520 372 528 398 516 C402 481 415 452 438 428 Z";
+  const sleevePathRight = isHoodie
+    ? "M650 397 C694 430 711 516 705 608 C678 622 649 623 626 610 C629 544 616 483 589 435 Z"
+    : "M648 397 C685 419 702 458 708 497 C682 520 652 528 626 516 C622 481 609 452 586 428 Z";
+  const bodyPath = isHoodie
+    ? "M395 385 C438 356 586 356 629 385 C652 451 656 578 628 678 C570 704 454 704 396 678 C368 578 372 451 395 385 Z"
+    : "M384 392 C430 356 594 356 640 392 C654 458 647 587 624 675 C567 694 457 694 400 675 C377 587 370 458 384 392 Z";
+
+  return `
+    ${showSleeves ? `
+      <path d="${sleevePathLeft}" fill="${top.color}" stroke="#17262a" stroke-width="9" stroke-linejoin="round"/>
+      <path d="${sleevePathRight}" fill="${top.color}" stroke="#17262a" stroke-width="9" stroke-linejoin="round"/>
+      <path d="M338 515 C357 529 376 533 394 526" fill="none" stroke="${top.light}" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+      <path d="M686 515 C667 529 648 533 630 526" fill="none" stroke="${top.light}" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+    ` : ""}
+    <path d="${bodyPath}" fill="url(#${id}-top-grad)" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M424 410 C453 438 571 438 600 410" fill="none" stroke="${top.light}" stroke-width="8" stroke-linecap="round" opacity="0.48"/>
+    <path d="M426 640 C472 661 552 661 598 640" fill="none" stroke="${top.dark}" stroke-width="7" stroke-linecap="round" opacity="0.35"/>
+    ${storybookTopPattern(top, id)}
+  `;
+}
+
+function storybookOuterSvg(outer, id) {
+  if (!outer) return "";
+  if (outer.kind === "vest") {
+    return `
+      <path d="M386 381 C435 352 589 352 638 381 C656 461 646 587 621 678 C594 693 560 700 512 700 C464 700 430 693 403 678 C378 587 368 461 386 381 Z"
+        fill="url(#${id}-outer-grad)" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M512 384 L512 692" stroke="${outer.dark}" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
+      <path d="M428 390 C442 438 456 499 454 672" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.48"/>
+      <path d="M596 390 C582 438 568 499 570 672" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.48"/>
+      ${outer.pattern === "pocket" ? `<path d="M424 570 L482 590 L468 637 L414 618 Z" fill="${outer.dark}" opacity="0.34"/><path d="M600 570 L542 590 L556 637 L610 618 Z" fill="${outer.dark}" opacity="0.34"/>` : ""}
+      ${outer.pattern === "warm" ? `<path d="M430 371 C465 392 559 392 594 371" fill="none" stroke="#fff2d7" stroke-width="24" stroke-linecap="round"/>` : ""}
+    `;
+  }
+
+  return `
+    <path d="M358 392 C322 436 307 528 317 616 C343 633 374 636 400 622 C393 551 407 482 438 428 Z"
+      fill="${outer.color}" stroke="#17262a" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M666 392 C702 436 717 528 707 616 C681 633 650 636 624 622 C631 551 617 482 586 428 Z"
+      fill="${outer.color}" stroke="#17262a" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M382 372 C431 348 593 348 642 372 C664 459 655 590 625 688 C573 710 451 710 399 688 C369 590 360 459 382 372 Z"
+      fill="url(#${id}-outer-grad)" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M512 379 L512 696" stroke="${outer.dark}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M396 444 C447 470 577 470 628 444" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.45"/>
+    <path d="M402 611 C457 637 567 637 622 611" fill="none" stroke="${outer.dark}" stroke-width="7" stroke-linecap="round" opacity="0.34"/>
+    ${outer.pattern === "pocket" ? `<path d="M416 565 L482 585 L464 642 L402 620 Z" fill="${outer.dark}" opacity="0.34"/><path d="M608 565 L542 585 L560 642 L622 620 Z" fill="${outer.dark}" opacity="0.34"/>` : ""}
+    ${outer.pattern === "warm" ? `<path d="M426 363 C463 389 561 389 598 363" fill="none" stroke="#fff2d7" stroke-width="25" stroke-linecap="round"/>` : ""}
+  `;
+}
+
+function storybookBottomSvg(bottom) {
+  if (bottom.kind === "shorts") {
+    return `
+      <path d="M393 646 C456 667 568 667 631 646 L616 747 C568 765 456 765 408 747 Z"
+        fill="${bottom.color}" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
+      <path d="M512 666 L512 751" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
+      <path d="M428 709 L480 719" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+      <path d="M596 709 L544 719" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+      <path d="M420 742 C419 794 424 838 437 884" fill="none" stroke="#f0b479" stroke-width="42" stroke-linecap="round"/>
+      <path d="M604 742 C605 794 600 838 587 884" fill="none" stroke="#f0b479" stroke-width="42" stroke-linecap="round"/>
+    `;
+  }
+  return `
+    <path d="M401 642 C451 664 573 664 623 642 C632 719 622 808 600 884 L536 884 C529 808 520 737 512 682 C504 737 495 808 488 884 L424 884 C402 808 392 719 401 642 Z"
+      fill="${bottom.color}" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
+    <path d="M512 668 C506 748 501 816 488 884" fill="none" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M512 668 C518 748 523 816 536 884" fill="none" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M444 690 C432 751 435 815 449 868" fill="none" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.42"/>
+    <path d="M580 690 C592 751 589 815 575 868" fill="none" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.42"/>
+    ${bottom.pattern === "cargo" ? `<path d="M407 736 L462 728 L466 786 L414 794 Z" fill="${bottom.dark}" opacity="0.35"/><path d="M617 736 L562 728 L558 786 L610 794 Z" fill="${bottom.dark}" opacity="0.35"/>` : ""}
+    ${bottom.pattern === "denim" ? `<path d="M430 664 C449 681 475 686 499 681" fill="none" stroke="${bottom.light}" stroke-width="6" opacity="0.45"/><path d="M594 664 C575 681 549 686 525 681" fill="none" stroke="${bottom.light}" stroke-width="6" opacity="0.45"/>` : ""}
+    ${bottom.pattern === "crease" ? `<path d="M462 681 L456 870" stroke="#eef2f3" stroke-width="5" opacity="0.35"/><path d="M562 681 L568 870" stroke="#eef2f3" stroke-width="5" opacity="0.35"/>` : ""}
+  `;
+}
+
+function storybookShoesSvg(shoes) {
+  if (shoes.kind === "slippers") {
+    return `
+      <path d="M381 875 C420 852 478 857 493 890 C456 912 396 912 363 894 Z" fill="${shoes.sole}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M531 890 C546 857 604 852 643 875 L661 894 C628 912 568 912 531 890 Z" fill="${shoes.sole}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M408 873 C430 860 459 863 474 881" fill="none" stroke="${shoes.trim}" stroke-width="13" stroke-linecap="round"/>
+      <path d="M550 881 C565 863 594 860 616 873" fill="none" stroke="${shoes.trim}" stroke-width="13" stroke-linecap="round"/>
+    `;
+  }
+  if (shoes.kind === "dress") {
+    return `
+      <path d="M363 872 C421 850 478 861 496 895 C449 918 390 914 351 897 Z" fill="${shoes.color}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M528 895 C546 861 603 850 661 872 L673 897 C634 914 575 918 528 895 Z" fill="${shoes.color}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M378 897 C420 908 456 907 489 890" stroke="${shoes.sole}" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+      <path d="M535 890 C568 907 604 908 646 897" stroke="${shoes.sole}" stroke-width="8" stroke-linecap="round" opacity="0.7"/>
+    `;
+  }
+  return `
+    <path d="M361 869 C416 845 475 857 501 893 C455 921 389 918 351 899 Z" fill="${shoes.color}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M523 893 C549 857 608 845 663 869 L673 899 C635 918 569 921 523 893 Z" fill="${shoes.color}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M386 870 L455 884" stroke="${shoes.trim}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M638 870 L569 884" stroke="${shoes.trim}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M356 900 C402 923 461 924 501 895" stroke="${shoes.sole}" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
+    <path d="M523 895 C563 924 622 923 668 900" stroke="${shoes.sole}" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
+  `;
+}
+
+function storybookHeadSvg() {
+  return `
+    <path d="M470 310 L554 310 L554 392 C535 407 489 407 470 392 Z" fill="#f0b479"/>
+    <circle cx="512" cy="253" r="111" fill="#f4c58f" stroke="#17262a" stroke-width="9"/>
+    <circle cx="400" cy="264" r="27" fill="#f0b479" stroke="#17262a" stroke-width="7"/>
+    <circle cx="624" cy="264" r="27" fill="#f0b479" stroke="#17262a" stroke-width="7"/>
+    <path d="M400 249 C404 155 450 103 520 105 C593 107 637 162 632 249 C603 207 563 190 512 190 C461 190 427 207 400 249 Z"
+      fill="#1d2f34" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M394 219 C419 169 466 146 522 149 C576 152 615 181 632 224" fill="none" stroke="#344a50" stroke-width="9" stroke-linecap="round" opacity="0.65"/>
+    <circle cx="472" cy="262" r="12" fill="#17262a"/>
+    <circle cx="552" cy="262" r="12" fill="#17262a"/>
+    <path d="M476 315 C496 335 530 335 550 315" fill="none" stroke="#8b5736" stroke-width="8" stroke-linecap="round"/>
+    <path d="M512 277 C508 296 504 307 498 318" fill="none" stroke="#c8895a" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="438" cy="302" rx="24" ry="16" fill="#f59e9e" opacity="0.58"/>
+    <ellipse cx="586" cy="302" rx="24" ry="16" fill="#f59e9e" opacity="0.58"/>
+  `;
+}
+
+function renderStorybookOutfit(selection, targetSize = 420) {
+  const top = outfitStyle("tops", selection.shirtKey);
+  const bottom = outfitStyle("bottoms", selection.pantsKey);
+  const shoes = outfitStyle("shoes", selection.shoesKey);
+  const outer = selection.outerKey ? storybookOutfitStyles.outers[selection.outerKey] : null;
+  const id = storybookId(selection);
+  const description = [top.name, bottom.name, shoes.name, outer?.name].filter(Boolean).join(", ");
+
+  return `
+    <div class="storybook-character" style="--character-size:${targetSize}px">
+      <svg viewBox="0 0 1024 1024" role="img" aria-label="선택한 옷을 입은 캐릭터">
+        <title>선택한 옷을 입은 캐릭터: ${description}</title>
+        <defs>
+          <linearGradient id="${id}-top-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${top.light}"/>
+            <stop offset="58%" stop-color="${top.color}"/>
+            <stop offset="100%" stop-color="${top.dark}"/>
+          </linearGradient>
+          <linearGradient id="${id}-outer-grad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="${outer?.light || top.light}"/>
+            <stop offset="58%" stop-color="${outer?.color || top.color}"/>
+            <stop offset="100%" stop-color="${outer?.dark || top.dark}"/>
+          </linearGradient>
+          <filter id="${id}-soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#24413f" flood-opacity="0.16"/>
+          </filter>
+          <clipPath id="${id}-torso-clip">
+            <path d="M384 392 C430 356 594 356 640 392 C654 458 647 587 624 675 C567 694 457 694 400 675 C377 587 370 458 384 392 Z"/>
+          </clipPath>
+        </defs>
+        <rect x="70" y="48" width="884" height="920" rx="64" fill="#f8fbf6"/>
+        <rect x="88" y="66" width="848" height="884" rx="52" fill="#ecf8ff"/>
+        <circle cx="760" cy="170" r="54" fill="#ffffff" opacity="0.9"/>
+        <path d="M222 764 C325 725 419 733 512 764 C605 733 699 725 802 764 L802 900 L222 900 Z" fill="#d8ecd0"/>
+        <ellipse cx="512" cy="902" rx="260" ry="38" fill="#82a98d" opacity="0.34"/>
+        <g filter="url(#${id}-soft-shadow)">
+          ${storybookBackLayer(top, outer, id)}
+          ${storybookBottomSvg(bottom)}
+          ${storybookShoesSvg(shoes)}
+          ${storybookArmsSvg()}
+          ${storybookTopSvg(top, outer, id)}
+          ${storybookOuterSvg(outer, id)}
+          <circle cx="346" cy="674" r="28" fill="#f0b479" stroke="#17262a" stroke-width="7"/>
+          <circle cx="678" cy="674" r="28" fill="#f0b479" stroke="#17262a" stroke-width="7"/>
+          ${storybookHeadSvg()}
+        </g>
+      </svg>
+    </div>
+  `;
+}
+
+function outfitPreviewMarkup(picks) {
+  const pantsPick = findPickByLabel(picks, "바지");
+  const shirtPick = findPickByLabel(picks, "상의") || findPickByLabel(picks, "반팔티") || findPickByLabel(picks, "후드티");
+  const shoesPick = findPickByLabel(picks, "신발");
+  const outerPick = findPickByLabel(picks, "외투") || findLastPickByLabels(picks, ["잠바", "조끼"]);
+  const shownPicks = [
+    { label: "상의", pick: shirtPick },
+    { label: "바지", pick: pantsPick },
+    { label: "신발", pick: shoesPick },
+    outerPick ? { label: "겉옷", pick: outerPick } : null,
+  ].filter(Boolean);
+
+  return `
+    <section class="outfit-preview" aria-label="내가 고른 옷을 입은 모습">
+      <div class="outfit-card">
+        ${renderStorybookOutfit({
+          pantsKey: pantsPick?.key,
+          shirtKey: shirtPick?.key,
+          shoesKey: shoesPick?.key,
+          outerKey: outerPick?.key,
+        }, 440)}
+      </div>
+      <div class="outfit-detail">
+        <strong>입어 본 모습</strong>
+        <div class="outfit-tags">
+          ${shownPicks
+            .map(
+              ({ label, pick }) => `
+                <span class="outfit-tag"><b>${label}</b><em>${pick.title}</em></span>
+              `,
+            )
+            .join("")}
+        </div>
+      </div>
+    </section>
+  `;
+}
+
 function renderChoiceSummary() {
   const isFood = state.choiceFlow.type === "food";
   const isActivity = state.choiceFlow.type === "activity";
-  const title = isFood ? "내가 고른 음식이에요" : isActivity ? "내가 고른 활동이에요" : "내가 고른 것이에요";
+  const isClothes = state.choiceFlow.type === "clothes";
+  const title = isFood ? "내가 고른 음식이에요" : isActivity ? "내가 고른 활동이에요" : isClothes ? "내가 고른 옷이에요" : "내가 고른 것이에요";
   const visiblePicks = state.choiceFlow.picks.filter((pick) => !pick.skip);
   const steps = getActiveChoiceSteps();
   focusWord.textContent = "선택";
@@ -2026,6 +2325,7 @@ function renderChoiceSummary() {
       { label: "고른 카드", value: `${visiblePicks.length}개`, kind: "safe" },
     ])}
     ${state.choiceFlow.summary ? `<div class="choice-result-sentence">${state.choiceFlow.summary}</div>` : ""}
+    ${isClothes ? outfitPreviewMarkup(state.choiceFlow.picks) : ""}
     <div class="card-grid summary-grid">
       ${visiblePicks
         .map(
