@@ -5,7 +5,7 @@ LG 스탠바이미처럼 브라우저 TTS가 동작하지 않는 기기에서는
 - 파일 형식: MP3
 - 위치: `assets/audio/`
 - 파일명: `recording-list.csv`의 `filename` 값과 정확히 같아야 합니다.
-- 전체 파일 수: 236개
+- 전체 파일 수: 245개
 - 생성 음성: `Microsoft Heami Desktop` 한국어 음성(`ko-KR`)
 - 생성 속도: Windows SAPI `Rate = -1`로, 기본 TTS보다 조금 차분한 속도입니다.
 

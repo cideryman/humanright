@@ -1,4 +1,4 @@
-const CACHE_NAME = "rights-board-v29";
+const CACHE_NAME = "rights-board-v33";
 
 // Icon files expected by manifest.json:
 // ./icons/icon-192.png

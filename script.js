@@ -629,15 +629,16 @@ const shieldScenes = [
   {
     key: "waitTurnSpeech",
     group: "함께하는 말",
-    title: "잠깐 기다리기",
-    easy: "잠깐 기다릴게요.",
-    text: "지금은 바로 할 수 없어요. 잠깐 기다려요.",
-    question: "바로 할 수 없을 때 어떤 말을 할까요?",
-    answerText: "좋은 방법: 잠깐 기다릴게요, 끝나면 할래요라고 말해요.",
+    title: "천천히 같이 가요",
+    easy: "기다릴게요.",
+    text: "산책할 때 친구가 천천히 걸어요. 나는 먼저 가고 싶어요.",
+    question: "함께 걸을 때 어떻게 말할까요?",
+    answerText: "좋은 방법: 친구를 기다리고 천천히 같이 가요.",
     answers: [
-      { text: "잠깐 기다릴게요", correct: true },
-      { text: "끝나면 할래요", correct: true },
-      { text: "밀고 들어가요", correct: false },
+      { text: "기다릴게요", correct: true, imageKey: "ansWaitWalkTogether" },
+      { text: "천천히 같이 가요", correct: true, imageKey: "ansSlowTogether" },
+      { text: "빨리 와요", correct: false, imageKey: "ansHurryFriend" },
+      { text: "혼자 먼저 가요", correct: false, imageKey: "ansWalkAheadAlone" },
     ],
   },
   {
@@ -990,6 +991,7 @@ function illustration(name) {
     "ansFollowStranger",
     "ansGoodJob",
     "ansGreatWork",
+    "ansHurryFriend",
     "ansKeepTalking",
     "ansNoPhoto",
     "ansOpenDoor",
@@ -1009,7 +1011,9 @@ function illustration(name) {
     "ansTellTeacherTogether",
     "ansUseNoAsk",
     "ansWaitPatiently",
+    "ansWaitWalkTogether",
     "ansWaitTurn",
+    "ansWalkAheadAlone",
     "apologySpeech",
     "bathroomPrivacy",
     "bibimbap",
@@ -1082,6 +1086,7 @@ function illustration(name) {
     "sofa",
     "soupRice",
     "speakSlowly",
+    "ansSlowTogether",
     "sportsDrink",
     "strangerCaution",
     "tea",
@@ -1496,7 +1501,7 @@ function illustration(name) {
   return scenes[name];
 }
 
-function answerVisual(text, kind = "") {
+function answerVisual(text, kind = "", imageKey = "") {
   const visualByText = {
     "제가 이거 써 봐도 될까요?": "ansAskPermission",
     "묻지 않고 쓴다": "ansUseNoAsk",
@@ -1545,6 +1550,9 @@ function answerVisual(text, kind = "") {
     "계속 말해요": "ansKeepTalking",
     "기다릴게요": "ansWaitPatiently",
     "잠깐 기다릴게요": "ansWaitPatiently",
+    "천천히 같이 가요": "ansSlowTogether",
+    "빨리 와요": "ansHurryFriend",
+    "혼자 먼저 가요": "ansWalkAheadAlone",
     "끝나면 할래요": "ansAfterFinish",
     "밀고 들어가요": "ansPushIn",
     "먼저 해도 될까요?": "ansAskFirst",
@@ -1569,7 +1577,7 @@ function answerVisual(text, kind = "") {
     "아는 척해요": "ansStaySilent",
   };
 
-  const visualKey = visualByText[text] || (kind === "danger" ? "danger" : kind === "help" ? "help" : "respect");
+  const visualKey = imageKey || visualByText[text] || (kind === "danger" ? "danger" : kind === "help" ? "help" : "respect");
   return `<span class="answer-visual">${illustration(visualKey)}</span>`;
 }
 
@@ -1865,6 +1873,7 @@ function shieldScore(text, isCorrect) {
       "멈출게요",
       "기다릴게요",
       "잠깐 기다릴게요",
+      "천천히 같이 가요",
       "먼저 해도 될까요?",
       "끝나면 할래요",
       "미안해요",
@@ -1997,37 +2006,37 @@ function findLastPickByLabels(picks, labels) {
 const storybookOutfitStyles = {
   tops: {
     default: { kind: "tshirt", name: "흰 반팔", color: "#f7f4df", light: "#fffdf0", dark: "#d7ceb2", pattern: "plain" },
-    tshirtGreen: { kind: "tshirt", name: "초록 반팔", color: "#2f9b63", light: "#54bd83", dark: "#1e7145", pattern: "plain" },
-    tshirtBlue: { kind: "tshirt", name: "파란 반팔", color: "#2368c7", light: "#4c8fe8", dark: "#174884", pattern: "plain" },
-    tshirtStripe: { kind: "tshirt", name: "줄무늬 반팔", color: "#f4f0db", light: "#fff8e4", dark: "#c65f50", pattern: "stripe" },
-    tshirtStar: { kind: "tshirt", name: "별 반팔", color: "#f1c84a", light: "#ffe37d", dark: "#b48519", pattern: "star" },
-    hoodieGreen: { kind: "hoodie", name: "초록 후드티", color: "#2f9b63", light: "#5ec488", dark: "#1f6e49", pattern: "hoodiePocket" },
-    hoodieBlue: { kind: "hoodie", name: "파란 후드티", color: "#2b6fce", light: "#5d99eb", dark: "#1d4c92", pattern: "hoodiePocket" },
-    hoodiePocket: { kind: "hoodie", name: "주머니 후드티", color: "#6f8ea9", light: "#94aec5", dark: "#4d6478", pattern: "hoodiePocket" },
-    hoodieLine: { kind: "hoodie", name: "끈 있는 후드티", color: "#5aa36d", light: "#7dc38f", dark: "#36794b", pattern: "hoodieLine" },
+    tshirtGreen: { kind: "tshirt", name: "초록 반팔", color: "#1f9b56", light: "#46bd78", dark: "#12643b", pattern: "plain" },
+    tshirtBlue: { kind: "tshirt", name: "파란 반팔", color: "#0968c9", light: "#3d91ee", dark: "#063e7d", pattern: "plain" },
+    tshirtStripe: { kind: "tshirt", name: "줄무늬 반팔", color: "#fbfbf3", light: "#ffffff", dark: "#102b4f", pattern: "stripe", stripeColor: "#142f57" },
+    tshirtStar: { kind: "tshirt", name: "별무늬 반팔", color: "#fbfbf4", light: "#ffffff", dark: "#152b55", pattern: "smallStars", starColor: "#172f63" },
+    hoodieGreen: { kind: "hoodie", name: "초록 후드티", color: "#245f2d", light: "#3a7a43", dark: "#153c1f", pattern: "hoodiePocket" },
+    hoodieBlue: { kind: "hoodie", name: "파란 후드티", color: "#1768b8", light: "#3f8fe0", dark: "#0d3f76", pattern: "hoodiePocket" },
+    hoodiePocket: { kind: "hoodie", name: "주머니 후드티", color: "#f0e4ce", light: "#fff6e8", dark: "#cdbb9c", pattern: "hoodiePocket" },
+    hoodieLine: { kind: "hoodie", name: "끈 있는 후드티", color: "#e8d7ba", light: "#fff1d7", dark: "#bba57d", pattern: "hoodieLine" },
   },
   bottoms: {
     default: { kind: "pants", name: "청바지", color: "#2e5d8c", light: "#4d7fb1", dark: "#1c3d60", pattern: "denim" },
     jeans: { kind: "pants", name: "청바지", color: "#2d6399", light: "#5389bd", dark: "#1c4168", pattern: "denim" },
-    shorts: { kind: "shorts", name: "반바지", color: "#c79655", light: "#dfb574", dark: "#8e6333", pattern: "shorts" },
-    cargoPants: { kind: "pants", name: "카고바지", color: "#72815d", light: "#99a57c", dark: "#4f5d3c", pattern: "cargo" },
-    slacks: { kind: "pants", name: "정장바지", color: "#4a5159", light: "#6f7880", dark: "#2d3339", pattern: "crease" },
+    shorts: { kind: "shorts", name: "반바지", color: "#c79a59", light: "#e1b979", dark: "#8a6132", pattern: "drawstringShorts" },
+    cargoPants: { kind: "pants", name: "카고바지", color: "#606c37", light: "#818d52", dark: "#3e4823", pattern: "cargo" },
+    slacks: { kind: "pants", name: "정장바지", color: "#37383b", light: "#5b5d62", dark: "#202124", pattern: "crease" },
   },
   shoes: {
     default: { name: "운동화", color: "#ffffff", trim: "#2e5d8c", sole: "#dfe7ec", kind: "sneakers" },
-    slippers: { name: "슬리퍼", color: "#6aa8d8", trim: "#316c9b", sole: "#d5e7f4", kind: "slippers" },
+    slippers: { name: "슬리퍼", color: "#e7e8e3", trim: "#9a9c9b", sole: "#d4d6d1", kind: "slippers", stripe: "#b8bab6" },
     sneakers: { name: "운동화", color: "#ffffff", trim: "#2e5d8c", sole: "#dfe7ec", kind: "sneakers" },
-    dressShoes: { name: "구두", color: "#5d3a24", trim: "#2f2118", sole: "#2b1b12", kind: "dress" },
+    dressShoes: { name: "구두", color: "#17191b", trim: "#45484c", sole: "#0d0e10", kind: "dress" },
   },
   outers: {
-    jumperBlue: { kind: "jumper", name: "파란 잠바", color: "#1f5c9c", light: "#3b7fc4", dark: "#123c67", pattern: "zip" },
-    jumperZip: { kind: "jumper", name: "지퍼 잠바", color: "#243f63", light: "#47698f", dark: "#172942", pattern: "zip" },
-    jumperPocket: { kind: "jumper", name: "주머니 잠바", color: "#587b8e", light: "#7ea2b6", dark: "#3b5968", pattern: "pocket" },
-    jumperWarm: { kind: "jumper", name: "따뜻한 잠바", color: "#bd7b37", light: "#d89c56", dark: "#7b4d22", pattern: "warm" },
-    vestBlue: { kind: "vest", name: "파란 조끼", color: "#224e8a", light: "#4f7db9", dark: "#16325c", pattern: "padded" },
-    vestPocket: { kind: "vest", name: "주머니 조끼", color: "#4c6f82", light: "#789aaf", dark: "#324e5d", pattern: "pocket" },
-    vestWarm: { kind: "vest", name: "따뜻한 조끼", color: "#c78c42", light: "#e1ae68", dark: "#8b612b", pattern: "warm" },
-    vestZip: { kind: "vest", name: "지퍼 조끼", color: "#44525f", light: "#6a7a88", dark: "#2b343e", pattern: "zip" },
+    jumperBlue: { kind: "jumper", name: "파란 잠바", color: "#155bb4", light: "#377fdb", dark: "#0b3570", pattern: "puffer" },
+    jumperZip: { kind: "jumper", name: "지퍼 잠바", color: "#263f66", light: "#486998", dark: "#142943", pattern: "bomberZip" },
+    jumperPocket: { kind: "jumper", name: "주머니 잠바", color: "#4d5528", light: "#747c46", dark: "#2f3519", pattern: "fieldPockets" },
+    jumperWarm: { kind: "jumper", name: "따뜻한 잠바", color: "#c38643", light: "#e2a963", dark: "#835526", pattern: "warmCollar" },
+    vestBlue: { kind: "vest", name: "파란 조끼", color: "#2f6db8", light: "#5b94d9", dark: "#1d477b", pattern: "zipVest" },
+    vestPocket: { kind: "vest", name: "주머니 조끼", color: "#d7bd91", light: "#ecd6b0", dark: "#9c7c4b", pattern: "safariVest" },
+    vestWarm: { kind: "vest", name: "따뜻한 조끼", color: "#222326", light: "#44484d", dark: "#0f1012", pattern: "pufferVest" },
+    vestZip: { kind: "vest", name: "지퍼 조끼", color: "#d7d9da", light: "#f3f5f5", dark: "#898f93", pattern: "grayZipVest" },
   },
 };
 
@@ -2046,19 +2055,21 @@ function storybookBackLayer(top, outer, id) {
   if (top.kind !== "hoodie") return "";
   const hoodVisible = !outer || outer.kind === "vest";
   return `
-    <path d="M390 347 C395 258 448 222 512 222 C576 222 629 258 634 347 C608 317 570 299 512 299 C454 299 416 317 390 347 Z"
-      fill="${top.dark}" opacity="${hoodVisible ? "1" : "0.55"}" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
-    <path d="M421 340 C438 290 472 270 512 270 C552 270 586 290 603 340"
+    <path d="M382 382 C383 278 437 222 512 222 C587 222 641 278 642 382 C614 347 572 328 512 328 C452 328 410 347 382 382 Z"
+      fill="${top.dark}" opacity="${hoodVisible ? "1" : "0.5"}" stroke="#18272b" stroke-width="9" stroke-linejoin="round"/>
+    <path d="M416 365 C435 300 470 274 512 274 C554 274 589 300 608 365"
       fill="none" stroke="${top.light}" stroke-width="8" stroke-linecap="round" opacity="0.55"/>
   `;
 }
 
 function storybookArmsSvg() {
   return `
-    <path d="M358 425 C323 485 305 572 319 654 C324 682 344 699 366 688 C386 679 389 658 381 633 C367 585 381 504 406 453 Z"
-      fill="#f0b479" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M666 425 C701 485 719 572 705 654 C700 682 680 699 658 688 C638 679 635 658 643 633 C657 585 643 504 618 453 Z"
-      fill="#f0b479" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M374 432 C340 493 324 576 333 650 C338 681 357 698 381 689 C405 680 410 656 399 626 C382 577 397 507 426 459 Z"
+      fill="#edb276" stroke="#18272b" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M650 432 C684 493 700 576 691 650 C686 681 667 698 643 689 C619 680 614 656 625 626 C642 577 627 507 598 459 Z"
+      fill="#edb276" stroke="#18272b" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M353 520 C347 561 349 610 359 652" fill="none" stroke="#f5c395" stroke-width="6" stroke-linecap="round" opacity="0.45"/>
+    <path d="M671 520 C677 561 675 610 665 652" fill="none" stroke="#f5c395" stroke-width="6" stroke-linecap="round" opacity="0.45"/>
   `;
 }
 
@@ -2066,25 +2077,56 @@ function storybookTopPattern(top, id) {
   if (top.pattern === "stripe") {
     return `
       <g clip-path="url(#${id}-torso-clip)" opacity="0.9">
-        <rect x="354" y="443" width="316" height="28" fill="${top.dark}"/>
-        <rect x="354" y="515" width="316" height="28" fill="${top.dark}"/>
-        <rect x="354" y="587" width="316" height="28" fill="${top.dark}"/>
+        <rect x="348" y="423" width="328" height="14" fill="${top.stripeColor || top.dark}"/>
+        <rect x="348" y="469" width="328" height="14" fill="${top.stripeColor || top.dark}"/>
+        <rect x="348" y="515" width="328" height="14" fill="${top.stripeColor || top.dark}"/>
+        <rect x="348" y="561" width="328" height="14" fill="${top.stripeColor || top.dark}"/>
+        <rect x="348" y="607" width="328" height="14" fill="${top.stripeColor || top.dark}"/>
+        <rect x="348" y="653" width="328" height="14" fill="${top.stripeColor || top.dark}"/>
       </g>
     `;
   }
-  if (top.pattern === "star") {
+  if (top.pattern === "smallStars") {
+    const stars = [
+      [446, 446], [532, 438], [594, 478],
+      [476, 520], [560, 550], [424, 592],
+      [512, 626], [606, 642],
+    ];
     return `
-      <path d="M512 454 L535 505 L590 510 L548 546 L560 600 L512 572 L464 600 L476 546 L434 510 L489 505 Z"
-        fill="#fff4a8" stroke="${top.dark}" stroke-width="6" stroke-linejoin="round" opacity="0.9"/>
+      <g clip-path="url(#${id}-torso-clip)">
+        ${stars
+          .map(
+            ([x, y]) =>
+              `<path d="M${x} ${y - 18} L${x + 6} ${y - 5} L${x + 20} ${y - 4} L${x + 9} ${y + 5} L${x + 13} ${y + 19} L${x} ${y + 11} L${x - 13} ${y + 19} L${x - 9} ${y + 5} L${x - 20} ${y - 4} L${x - 6} ${y - 5} Z" fill="${top.starColor || top.dark}"/>`,
+          )
+          .join("")}
+      </g>
     `;
   }
   if (top.pattern === "hoodiePocket" || top.pattern === "hoodieLine") {
     return `
-      <path d="M438 574 C464 599 560 599 586 574 L576 650 C545 671 479 671 448 650 Z"
-        fill="${top.dark}" opacity="0.34" stroke="${top.dark}" stroke-width="7" stroke-linejoin="round"/>
-      <path d="M476 392 C488 428 504 454 512 474 C520 454 536 428 548 392"
-        fill="none" stroke="#fff7df" stroke-width="6" stroke-linecap="round" opacity="0.78"/>
-      ${top.pattern === "hoodieLine" ? `<circle cx="482" cy="490" r="6" fill="#fff7df"/><circle cx="542" cy="490" r="6" fill="#fff7df"/>` : ""}
+      <path d="M430 576 C461 606 563 606 594 576 L582 653 C548 677 476 677 442 653 Z"
+        fill="${top.dark}" opacity="0.28" stroke="${top.dark}" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M462 612 C487 626 537 626 562 612" fill="none" stroke="${top.light}" stroke-width="6" stroke-linecap="round" opacity="0.34"/>
+      <path d="M474 392 C488 429 505 458 512 480 C519 458 536 429 550 392"
+        fill="none" stroke="#fff8e9" stroke-width="6" stroke-linecap="round" opacity="0.9"/>
+      ${top.pattern === "hoodieLine" ? `<path d="M482 440 C478 476 476 508 480 542" fill="none" stroke="#f9f5eb" stroke-width="5" stroke-linecap="round"/><path d="M542 440 C546 476 548 508 544 542" fill="none" stroke="#f9f5eb" stroke-width="5" stroke-linecap="round"/><circle cx="480" cy="548" r="5" fill="#f9f5eb"/><circle cx="544" cy="548" r="5" fill="#f9f5eb"/>` : ""}
+    `;
+  }
+  return "";
+}
+
+function storybookSleevePattern(top) {
+  if (top.pattern === "stripe") {
+    return `
+      <path d="M335 445 L405 438 M326 484 L398 478" stroke="${top.stripeColor || top.dark}" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+      <path d="M619 438 L689 445 M626 478 L698 484" stroke="${top.stripeColor || top.dark}" stroke-width="8" stroke-linecap="round" opacity="0.9"/>
+    `;
+  }
+  if (top.pattern === "smallStars") {
+    return `
+      <path d="M356 446 L362 459 L376 460 L365 469 L369 483 L356 475 L343 483 L347 469 L336 460 L350 459 Z" fill="${top.starColor || top.dark}"/>
+      <path d="M668 446 L674 459 L688 460 L677 469 L681 483 L668 475 L655 483 L659 469 L648 460 L662 459 Z" fill="${top.starColor || top.dark}"/>
     `;
   }
   return "";
@@ -2094,14 +2136,14 @@ function storybookTopSvg(top, outer, id) {
   const showSleeves = !outer || outer.kind === "vest";
   const isHoodie = top.kind === "hoodie";
   const sleevePathLeft = isHoodie
-    ? "M374 397 C330 430 313 516 319 608 C346 622 375 623 398 610 C395 544 408 483 435 435 Z"
-    : "M376 397 C339 419 322 458 316 497 C342 520 372 528 398 516 C402 481 415 452 438 428 Z";
+    ? "M372 401 C327 439 313 534 326 626 C352 641 383 641 407 625 C399 557 413 485 442 434 Z"
+    : "M382 397 C344 421 325 462 322 506 C347 528 378 533 404 519 C408 482 421 452 444 429 Z";
   const sleevePathRight = isHoodie
-    ? "M650 397 C694 430 711 516 705 608 C678 622 649 623 626 610 C629 544 616 483 589 435 Z"
-    : "M648 397 C685 419 702 458 708 497 C682 520 652 528 626 516 C622 481 609 452 586 428 Z";
+    ? "M652 401 C697 439 711 534 698 626 C672 641 641 641 617 625 C625 557 611 485 582 434 Z"
+    : "M642 397 C680 421 699 462 702 506 C677 528 646 533 620 519 C616 482 603 452 580 429 Z";
   const bodyPath = isHoodie
-    ? "M395 385 C438 356 586 356 629 385 C652 451 656 578 628 678 C570 704 454 704 396 678 C368 578 372 451 395 385 Z"
-    : "M384 392 C430 356 594 356 640 392 C654 458 647 587 624 675 C567 694 457 694 400 675 C377 587 370 458 384 392 Z";
+    ? "M396 384 C444 353 580 353 628 384 C652 450 658 579 630 682 C574 710 450 710 394 682 C366 579 372 450 396 384 Z"
+    : "M386 392 C432 357 592 357 638 392 C650 460 641 592 619 680 C562 700 462 700 405 680 C383 592 374 460 386 392 Z";
 
   return `
     ${showSleeves ? `
@@ -2109,10 +2151,14 @@ function storybookTopSvg(top, outer, id) {
       <path d="${sleevePathRight}" fill="${top.color}" stroke="#17262a" stroke-width="9" stroke-linejoin="round"/>
       <path d="M338 515 C357 529 376 533 394 526" fill="none" stroke="${top.light}" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
       <path d="M686 515 C667 529 648 533 630 526" fill="none" stroke="${top.light}" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
+      ${storybookSleevePattern(top)}
     ` : ""}
     <path d="${bodyPath}" fill="url(#${id}-top-grad)" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
-    <path d="M424 410 C453 438 571 438 600 410" fill="none" stroke="${top.light}" stroke-width="8" stroke-linecap="round" opacity="0.48"/>
+    <path d="M428 402 C456 432 568 432 596 402" fill="none" stroke="${top.light}" stroke-width="8" stroke-linecap="round" opacity="0.52"/>
+    <path d="M429 423 C462 448 562 448 595 423" fill="none" stroke="#17262a" stroke-width="5" stroke-linecap="round" opacity="0.2"/>
     <path d="M426 640 C472 661 552 661 598 640" fill="none" stroke="${top.dark}" stroke-width="7" stroke-linecap="round" opacity="0.35"/>
+    <path d="M424 484 C414 545 415 600 430 652" fill="none" stroke="${top.light}" stroke-width="7" stroke-linecap="round" opacity="0.28"/>
+    <path d="M600 484 C610 545 609 600 594 652" fill="none" stroke="${top.light}" stroke-width="7" stroke-linecap="round" opacity="0.28"/>
     ${storybookTopPattern(top, id)}
   `;
 }
@@ -2121,52 +2167,88 @@ function storybookOuterSvg(outer, id) {
   if (!outer) return "";
   if (outer.kind === "vest") {
     return `
-      <path d="M386 381 C435 352 589 352 638 381 C656 461 646 587 621 678 C594 693 560 700 512 700 C464 700 430 693 403 678 C378 587 368 461 386 381 Z"
+      <path d="M386 377 C435 348 589 348 638 377 C657 462 647 590 621 682 C592 699 556 706 512 706 C468 706 432 699 403 682 C377 590 367 462 386 377 Z"
         fill="url(#${id}-outer-grad)" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
-      <path d="M512 384 L512 692" stroke="${outer.dark}" stroke-width="8" stroke-linecap="round" opacity="0.8"/>
-      <path d="M428 390 C442 438 456 499 454 672" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.48"/>
-      <path d="M596 390 C582 438 568 499 570 672" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.48"/>
-      ${outer.pattern === "pocket" ? `<path d="M424 570 L482 590 L468 637 L414 618 Z" fill="${outer.dark}" opacity="0.34"/><path d="M600 570 L542 590 L556 637 L610 618 Z" fill="${outer.dark}" opacity="0.34"/>` : ""}
-      ${outer.pattern === "warm" ? `<path d="M430 371 C465 392 559 392 594 371" fill="none" stroke="#fff2d7" stroke-width="24" stroke-linecap="round"/>` : ""}
+      <path d="M512 382 L512 696" stroke="${outer.dark}" stroke-width="8" stroke-linecap="round" opacity="0.86"/>
+      <path d="M425 390 C442 444 455 510 452 675" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.44"/>
+      <path d="M599 390 C582 444 569 510 572 675" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.44"/>
+      ${outer.pattern === "pufferVest" ? `<path d="M397 455 C457 482 567 482 627 455" fill="none" stroke="${outer.dark}" stroke-width="8" opacity="0.55"/><path d="M388 525 C454 552 570 552 636 525" fill="none" stroke="${outer.dark}" stroke-width="8" opacity="0.55"/><path d="M391 595 C458 622 566 622 633 595" fill="none" stroke="${outer.dark}" stroke-width="8" opacity="0.55"/>` : ""}
+      ${outer.pattern === "safariVest" ? `<path d="M421 526 L487 526 L487 596 L421 596 Z" fill="${outer.light}" stroke="${outer.dark}" stroke-width="6" opacity="0.82"/><path d="M537 526 L603 526 L603 596 L537 596 Z" fill="${outer.light}" stroke="${outer.dark}" stroke-width="6" opacity="0.82"/><circle cx="454" cy="552" r="5" fill="${outer.dark}"/><circle cx="570" cy="552" r="5" fill="${outer.dark}"/>` : ""}
+      ${outer.pattern === "grayZipVest" || outer.pattern === "zipVest" ? `<path d="M419 572 L475 592 L457 647 L402 624 Z" fill="${outer.dark}" opacity="0.25"/><path d="M605 572 L549 592 L567 647 L622 624 Z" fill="${outer.dark}" opacity="0.25"/>` : ""}
     `;
   }
 
   return `
-    <path d="M358 392 C322 436 307 528 317 616 C343 633 374 636 400 622 C393 551 407 482 438 428 Z"
+    <path d="M358 392 C322 437 308 534 322 625 C347 640 379 642 404 626 C397 555 411 486 441 429 Z"
       fill="${outer.color}" stroke="#17262a" stroke-width="9" stroke-linejoin="round"/>
-    <path d="M666 392 C702 436 717 528 707 616 C681 633 650 636 624 622 C631 551 617 482 586 428 Z"
+    <path d="M666 392 C702 437 716 534 702 625 C677 640 645 642 620 626 C627 555 613 486 583 429 Z"
       fill="${outer.color}" stroke="#17262a" stroke-width="9" stroke-linejoin="round"/>
-    <path d="M382 372 C431 348 593 348 642 372 C664 459 655 590 625 688 C573 710 451 710 399 688 C369 590 360 459 382 372 Z"
+    <path d="M382 370 C431 344 593 344 642 370 C666 459 657 593 625 692 C573 714 451 714 399 692 C367 593 358 459 382 370 Z"
       fill="url(#${id}-outer-grad)" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
-    <path d="M512 379 L512 696" stroke="${outer.dark}" stroke-width="9" stroke-linecap="round"/>
-    <path d="M396 444 C447 470 577 470 628 444" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.45"/>
-    <path d="M402 611 C457 637 567 637 622 611" fill="none" stroke="${outer.dark}" stroke-width="7" stroke-linecap="round" opacity="0.34"/>
-    ${outer.pattern === "pocket" ? `<path d="M416 565 L482 585 L464 642 L402 620 Z" fill="${outer.dark}" opacity="0.34"/><path d="M608 565 L542 585 L560 642 L622 620 Z" fill="${outer.dark}" opacity="0.34"/>` : ""}
-    ${outer.pattern === "warm" ? `<path d="M426 363 C463 389 561 389 598 363" fill="none" stroke="#fff2d7" stroke-width="25" stroke-linecap="round"/>` : ""}
+    <path d="M512 377 L512 700" stroke="${outer.dark}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M396 443 C447 469 577 469 628 443" fill="none" stroke="${outer.light}" stroke-width="8" stroke-linecap="round" opacity="0.42"/>
+    <path d="M402 612 C457 638 567 638 622 612" fill="none" stroke="${outer.dark}" stroke-width="7" stroke-linecap="round" opacity="0.34"/>
+    ${outer.pattern === "puffer" ? `<path d="M386 442 C451 474 573 474 638 442" fill="none" stroke="${outer.dark}" stroke-width="9" opacity="0.52"/><path d="M373 512 C445 543 579 543 651 512" fill="none" stroke="${outer.dark}" stroke-width="9" opacity="0.52"/><path d="M377 583 C449 614 575 614 647 583" fill="none" stroke="${outer.dark}" stroke-width="9" opacity="0.52"/>` : ""}
+    ${outer.pattern === "fieldPockets" ? `<path d="M414 514 L483 514 L483 587 L414 587 Z" fill="${outer.light}" stroke="${outer.dark}" stroke-width="6" opacity="0.76"/><path d="M541 514 L610 514 L610 587 L541 587 Z" fill="${outer.light}" stroke="${outer.dark}" stroke-width="6" opacity="0.76"/><path d="M414 514 L448 544 L483 514" fill="none" stroke="${outer.dark}" stroke-width="5" opacity="0.7"/><path d="M541 514 L576 544 L610 514" fill="none" stroke="${outer.dark}" stroke-width="5" opacity="0.7"/>` : ""}
+    ${outer.pattern === "bomberZip" ? `<path d="M384 678 C431 706 593 706 640 678" fill="none" stroke="${outer.dark}" stroke-width="18" stroke-linecap="round" opacity="0.8"/><path d="M370 616 C398 636 426 638 450 621" fill="none" stroke="${outer.light}" stroke-width="8" opacity="0.4"/><path d="M654 616 C626 636 598 638 574 621" fill="none" stroke="${outer.light}" stroke-width="8" opacity="0.4"/>` : ""}
+    ${outer.pattern === "warmCollar" ? `<path d="M424 365 C464 394 560 394 600 365" fill="none" stroke="#fff2d7" stroke-width="25" stroke-linecap="round"/><path d="M421 384 C457 407 567 407 603 384" fill="none" stroke="#d7c1a2" stroke-width="8" opacity="0.7"/>` : ""}
+  `;
+}
+
+function storybookFrontHoodSvg(top, outer) {
+  if (top.kind !== "hoodie" || !outer) return "";
+  return `
+    <path d="M438 365 C461 395 489 411 512 413 C535 411 563 395 586 365 C562 382 538 391 512 391 C486 391 462 382 438 365 Z"
+      fill="${top.light}" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M462 382 C477 399 496 407 512 408 C528 407 547 399 562 382"
+      fill="none" stroke="${top.dark}" stroke-width="5" stroke-linecap="round" opacity="0.45"/>
+    <path d="M488 398 C486 431 484 458 489 488" fill="none" stroke="#fff8e9" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+    <path d="M536 398 C538 431 540 458 535 488" fill="none" stroke="#fff8e9" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+  `;
+}
+
+function storybookHandsSvg() {
+  return `
+    <path d="M319 661 C328 643 345 635 363 639 C382 643 394 657 392 675 C390 693 376 707 356 710 C337 713 319 703 314 687 C311 677 313 668 319 661 Z"
+      fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M325 675 C316 679 313 688 318 696 C323 704 333 700 338 690" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+    <path d="M346 650 C340 664 340 681 345 693" fill="none" stroke="#f6c48f" stroke-width="5" stroke-linecap="round" opacity="0.38"/>
+    <path d="M705 661 C696 643 679 635 661 639 C642 643 630 657 632 675 C634 693 648 707 668 710 C687 713 705 703 710 687 C713 677 711 668 705 661 Z"
+      fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M699 675 C708 679 711 688 706 696 C701 704 691 700 686 690" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+    <path d="M678 650 C684 664 684 681 679 693" fill="none" stroke="#f6c48f" stroke-width="5" stroke-linecap="round" opacity="0.38"/>
   `;
 }
 
 function storybookBottomSvg(bottom) {
   if (bottom.kind === "shorts") {
     return `
-      <path d="M393 646 C456 667 568 667 631 646 L616 747 C568 765 456 765 408 747 Z"
+      <path d="M393 642 C456 665 568 665 631 642 L618 751 C568 770 456 770 406 751 Z"
         fill="${bottom.color}" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
-      <path d="M512 666 L512 751" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
-      <path d="M428 709 L480 719" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
-      <path d="M596 709 L544 719" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.45"/>
-      <path d="M420 742 C419 794 424 838 437 884" fill="none" stroke="#f0b479" stroke-width="42" stroke-linecap="round"/>
-      <path d="M604 742 C605 794 600 838 587 884" fill="none" stroke="#f0b479" stroke-width="42" stroke-linecap="round"/>
+      <path d="M399 666 C457 684 567 684 625 666" fill="none" stroke="${bottom.light}" stroke-width="8" opacity="0.46"/>
+      <path d="M512 664 L512 754" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
+      <path d="M484 660 C494 686 497 706 492 724" fill="none" stroke="#473828" stroke-width="5" stroke-linecap="round"/>
+      <path d="M540 660 C530 686 527 706 532 724" fill="none" stroke="#473828" stroke-width="5" stroke-linecap="round"/>
+      <circle cx="498" cy="658" r="5" fill="#473828"/><circle cx="526" cy="658" r="5" fill="#473828"/>
+      <path d="M427 718 L480 728" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.4"/>
+      <path d="M597 718 L544 728" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.4"/>
+      <path d="M419 744 C405 792 407 841 424 884 C438 894 458 891 465 878 C456 834 458 792 474 752 Z"
+        fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M605 744 C619 792 617 841 600 884 C586 894 566 891 559 878 C568 834 566 792 550 752 Z"
+        fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M436 780 C429 813 431 844 442 872" fill="none" stroke="#f5c395" stroke-width="5" stroke-linecap="round" opacity="0.45"/>
+      <path d="M588 780 C595 813 593 844 582 872" fill="none" stroke="#f5c395" stroke-width="5" stroke-linecap="round" opacity="0.45"/>
     `;
   }
   return `
-    <path d="M401 642 C451 664 573 664 623 642 C632 719 622 808 600 884 L536 884 C529 808 520 737 512 682 C504 737 495 808 488 884 L424 884 C402 808 392 719 401 642 Z"
+    <path d="M401 642 C451 664 573 664 623 642 C634 720 624 809 599 890 L538 890 C530 812 520 738 512 682 C504 738 494 812 486 890 L425 890 C400 809 390 720 401 642 Z"
       fill="${bottom.color}" stroke="#17262a" stroke-width="10" stroke-linejoin="round"/>
-    <path d="M512 668 C506 748 501 816 488 884" fill="none" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
-    <path d="M512 668 C518 748 523 816 536 884" fill="none" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
-    <path d="M444 690 C432 751 435 815 449 868" fill="none" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.42"/>
-    <path d="M580 690 C592 751 589 815 575 868" fill="none" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.42"/>
-    ${bottom.pattern === "cargo" ? `<path d="M407 736 L462 728 L466 786 L414 794 Z" fill="${bottom.dark}" opacity="0.35"/><path d="M617 736 L562 728 L558 786 L610 794 Z" fill="${bottom.dark}" opacity="0.35"/>` : ""}
-    ${bottom.pattern === "denim" ? `<path d="M430 664 C449 681 475 686 499 681" fill="none" stroke="${bottom.light}" stroke-width="6" opacity="0.45"/><path d="M594 664 C575 681 549 686 525 681" fill="none" stroke="${bottom.light}" stroke-width="6" opacity="0.45"/>` : ""}
+    <path d="M512 668 C506 752 500 823 488 890" fill="none" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M512 668 C518 752 524 823 536 890" fill="none" stroke="${bottom.dark}" stroke-width="8" stroke-linecap="round"/>
+    <path d="M444 692 C432 755 435 819 449 872" fill="none" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.42"/>
+    <path d="M580 692 C592 755 589 819 575 872" fill="none" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.42"/>
+    ${bottom.pattern === "cargo" ? `<path d="M407 736 L462 728 L466 793 L414 800 Z" fill="${bottom.dark}" opacity="0.38" stroke="${bottom.dark}" stroke-width="4"/><path d="M617 736 L562 728 L558 793 L610 800 Z" fill="${bottom.dark}" opacity="0.38" stroke="${bottom.dark}" stroke-width="4"/><path d="M416 754 L456 750" stroke="${bottom.light}" stroke-width="5" opacity="0.45"/><path d="M608 754 L568 750" stroke="${bottom.light}" stroke-width="5" opacity="0.45"/>` : ""}
+    ${bottom.pattern === "denim" ? `<path d="M430 664 C449 681 475 686 499 681" fill="none" stroke="${bottom.light}" stroke-width="6" opacity="0.45"/><path d="M594 664 C575 681 549 686 525 681" fill="none" stroke="${bottom.light}" stroke-width="6" opacity="0.45"/><path d="M426 650 L474 650" stroke="${bottom.dark}" stroke-width="6" opacity="0.55"/><path d="M550 650 L598 650" stroke="${bottom.dark}" stroke-width="6" opacity="0.55"/>` : ""}
     ${bottom.pattern === "crease" ? `<path d="M462 681 L456 870" stroke="#eef2f3" stroke-width="5" opacity="0.35"/><path d="M562 681 L568 870" stroke="#eef2f3" stroke-width="5" opacity="0.35"/>` : ""}
   `;
 }
@@ -2174,10 +2256,12 @@ function storybookBottomSvg(bottom) {
 function storybookShoesSvg(shoes) {
   if (shoes.kind === "slippers") {
     return `
-      <path d="M381 875 C420 852 478 857 493 890 C456 912 396 912 363 894 Z" fill="${shoes.sole}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
-      <path d="M531 890 C546 857 604 852 643 875 L661 894 C628 912 568 912 531 890 Z" fill="${shoes.sole}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
-      <path d="M408 873 C430 860 459 863 474 881" fill="none" stroke="${shoes.trim}" stroke-width="13" stroke-linecap="round"/>
-      <path d="M550 881 C565 863 594 860 616 873" fill="none" stroke="${shoes.trim}" stroke-width="13" stroke-linecap="round"/>
+      <path d="M379 875 C420 852 477 858 494 890 C457 914 396 914 362 895 Z" fill="${shoes.sole}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M530 890 C547 858 604 852 645 875 L662 895 C628 914 567 914 530 890 Z" fill="${shoes.sole}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
+      <path d="M405 871 C430 858 462 863 478 884" fill="none" stroke="${shoes.color}" stroke-width="28" stroke-linecap="round"/>
+      <path d="M546 884 C562 863 594 858 619 871" fill="none" stroke="${shoes.color}" stroke-width="28" stroke-linecap="round"/>
+      <path d="M399 871 C425 858 459 863 480 884" fill="none" stroke="${shoes.stripe || shoes.trim}" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+      <path d="M545 884 C566 863 600 858 626 871" fill="none" stroke="${shoes.stripe || shoes.trim}" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
     `;
   }
   if (shoes.kind === "dress") {
@@ -2191,8 +2275,10 @@ function storybookShoesSvg(shoes) {
   return `
     <path d="M361 869 C416 845 475 857 501 893 C455 921 389 918 351 899 Z" fill="${shoes.color}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
     <path d="M523 893 C549 857 608 845 663 869 L673 899 C635 918 569 921 523 893 Z" fill="${shoes.color}" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M386 870 L455 884" stroke="${shoes.trim}" stroke-width="9" stroke-linecap="round"/>
-    <path d="M638 870 L569 884" stroke="${shoes.trim}" stroke-width="9" stroke-linecap="round"/>
+    <path d="M386 870 L455 884" stroke="${shoes.trim}" stroke-width="11" stroke-linecap="round"/>
+    <path d="M638 870 L569 884" stroke="${shoes.trim}" stroke-width="11" stroke-linecap="round"/>
+    <path d="M405 871 L448 885 M421 865 L466 886" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
+    <path d="M619 871 L576 885 M603 865 L558 886" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>
     <path d="M356 900 C402 923 461 924 501 895" stroke="${shoes.sole}" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
     <path d="M523 895 C563 924 622 923 668 900" stroke="${shoes.sole}" stroke-width="9" stroke-linecap="round" opacity="0.85"/>
   `;
@@ -2200,19 +2286,30 @@ function storybookShoesSvg(shoes) {
 
 function storybookHeadSvg() {
   return `
-    <path d="M470 310 L554 310 L554 392 C535 407 489 407 470 392 Z" fill="#f0b479"/>
-    <circle cx="512" cy="253" r="111" fill="#f4c58f" stroke="#17262a" stroke-width="9"/>
-    <circle cx="400" cy="264" r="27" fill="#f0b479" stroke="#17262a" stroke-width="7"/>
-    <circle cx="624" cy="264" r="27" fill="#f0b479" stroke="#17262a" stroke-width="7"/>
-    <path d="M400 249 C404 155 450 103 520 105 C593 107 637 162 632 249 C603 207 563 190 512 190 C461 190 427 207 400 249 Z"
-      fill="#1d2f34" stroke="#17262a" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M394 219 C419 169 466 146 522 149 C576 152 615 181 632 224" fill="none" stroke="#344a50" stroke-width="9" stroke-linecap="round" opacity="0.65"/>
-    <circle cx="472" cy="262" r="12" fill="#17262a"/>
-    <circle cx="552" cy="262" r="12" fill="#17262a"/>
-    <path d="M476 315 C496 335 530 335 550 315" fill="none" stroke="#8b5736" stroke-width="8" stroke-linecap="round"/>
-    <path d="M512 277 C508 296 504 307 498 318" fill="none" stroke="#c8895a" stroke-width="5" stroke-linecap="round"/>
-    <ellipse cx="438" cy="302" rx="24" ry="16" fill="#f59e9e" opacity="0.58"/>
-    <ellipse cx="586" cy="302" rx="24" ry="16" fill="#f59e9e" opacity="0.58"/>
+    <path d="M468 322 L556 322 L556 396 C535 414 489 414 468 396 Z" fill="#edb276"/>
+    <path d="M405 246 C386 246 374 264 379 286 C383 306 400 315 414 302 C426 291 424 261 405 246 Z"
+      fill="#edb276" stroke="#18272b" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M619 246 C638 246 650 264 645 286 C641 306 624 315 610 302 C598 291 600 261 619 246 Z"
+      fill="#edb276" stroke="#18272b" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M399 269 C391 276 392 289 404 293" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round"/>
+    <path d="M625 269 C633 276 632 289 620 293" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round"/>
+    <path d="M410 250 C410 178 454 124 512 124 C570 124 614 178 614 250 C614 318 577 365 523 376 C516 378 508 378 501 376 C447 365 410 318 410 250 Z"
+      fill="#f2c18a" stroke="#18272b" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M408 237 C416 153 459 99 522 103 C584 107 621 158 619 238 C591 198 554 180 505 184 C462 188 431 206 408 237 Z"
+      fill="#1d2f34" stroke="#18272b" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M407 216 C435 158 478 133 526 136 C573 139 605 167 621 218" fill="none" stroke="#40565c" stroke-width="8" stroke-linecap="round" opacity="0.58"/>
+    <path d="M430 219 C456 186 501 177 550 187" fill="none" stroke="#111f23" stroke-width="10" stroke-linecap="round"/>
+    <path d="M461 250 C471 244 483 244 493 250" fill="none" stroke="#5d4637" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+    <path d="M531 250 C541 244 553 244 563 250" fill="none" stroke="#5d4637" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
+    <ellipse cx="476" cy="267" rx="10" ry="12" fill="#18272b"/>
+    <ellipse cx="548" cy="267" rx="10" ry="12" fill="#18272b"/>
+    <circle cx="480" cy="263" r="3" fill="#ffffff" opacity="0.8"/>
+    <circle cx="552" cy="263" r="3" fill="#ffffff" opacity="0.8"/>
+    <path d="M483 318 C499 331 525 331 541 318" fill="none" stroke="#8b5736" stroke-width="6" stroke-linecap="round"/>
+    <path d="M497 337 C507 342 518 342 528 337" fill="none" stroke="#c8895a" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
+    <path d="M511 280 C507 298 502 309 497 319" fill="none" stroke="#c8895a" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="440" cy="305" rx="22" ry="14" fill="#f59e9e" opacity="0.42"/>
+    <ellipse cx="584" cy="305" rx="22" ry="14" fill="#f59e9e" opacity="0.42"/>
   `;
 }
 
@@ -2258,8 +2355,8 @@ function renderStorybookOutfit(selection, targetSize = 420) {
           ${storybookArmsSvg()}
           ${storybookTopSvg(top, outer, id)}
           ${storybookOuterSvg(outer, id)}
-          <circle cx="346" cy="674" r="28" fill="#f0b479" stroke="#17262a" stroke-width="7"/>
-          <circle cx="678" cy="674" r="28" fill="#f0b479" stroke="#17262a" stroke-width="7"/>
+          ${storybookFrontHoodSvg(top, outer)}
+          ${storybookHandsSvg()}
           ${storybookHeadSvg()}
         </g>
       </svg>
@@ -2645,7 +2742,7 @@ function renderShield() {
           (answer) =>
             `<button class="pill answer-card ${answer.correct ? (isTogetherScene ? "respect" : "help") : "danger"} ${selectedAnswer?.text === answer.text ? "selected" : ""}" data-shield="${answer.text}" data-correct="${answer.correct}" type="button">
               <span class="answer-text">${answer.text}</span>
-              ${answerVisual(answer.text, answer.correct ? (isTogetherScene ? "respect" : "help") : "danger")}
+              ${answerVisual(answer.text, answer.correct ? (isTogetherScene ? "respect" : "help") : "danger", answer.imageKey)}
             </button>`,
         )
         .join("")}
