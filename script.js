@@ -2041,7 +2041,10 @@ const storybookOutfitStyles = {
 };
 
 function outfitStyle(group, key) {
-  return storybookOutfitStyles[group]?.[key] || storybookOutfitStyles[group]?.default || {};
+  const styles = storybookOutfitStyles[group] || {};
+  const hasStyle = Boolean(key && styles[key]);
+  const selected = hasStyle ? styles[key] : styles.default || {};
+  return { ...selected, assetKey: hasStyle ? key : "default" };
 }
 
 function storybookId(selection) {
@@ -2049,6 +2052,58 @@ function storybookId(selection) {
     .filter(Boolean)
     .join("-")
     .replace(/[^a-zA-Z0-9_-]/g, "")}`;
+}
+
+const storybookCharacterParts = {
+  arms: "./assets/character/body/arms.png",
+  hands: "./assets/character/body/hands.png",
+  head: "./assets/character/body/head.png",
+  shortsLegs: "./assets/character/body/shorts-legs.png",
+};
+
+const storybookSeasonBackgrounds = {
+  summer: "./assets/character/backgrounds/summer.png",
+  spring: "./assets/character/backgrounds/spring.png",
+  autumn: "./assets/character/backgrounds/autumn.png",
+  winter: "./assets/character/backgrounds/winter.png",
+};
+
+const storybookClothingBase = "./assets/character/clothes";
+
+function storybookPartSvg(partKey) {
+  const src = storybookCharacterParts[partKey];
+  return `<image href="${src}" xlink:href="${src}" x="0" y="0" width="1024" height="1024" preserveAspectRatio="xMidYMid meet"/>`;
+}
+
+function storybookImageLayer(src, opacity = 1) {
+  const opacityAttribute = opacity < 1 ? ` opacity="${opacity}"` : "";
+  return `<image href="${src}" xlink:href="${src}" x="0" y="0" width="1024" height="1024" preserveAspectRatio="xMidYMid meet"${opacityAttribute}/>`;
+}
+
+function storybookClothingLayer(folder, key, opacity = 1) {
+  const src = `${storybookClothingBase}/${folder}/${key}.png`;
+  return storybookImageLayer(src, opacity);
+}
+
+function stableSeasonVariant(selection) {
+  const key = [selection.shirtKey, selection.pantsKey, selection.shoesKey, selection.outerKey || "none"].join("|");
+  let hash = 0;
+  for (let index = 0; index < key.length; index += 1) {
+    hash = (hash + key.charCodeAt(index) * (index + 1)) % 997;
+  }
+  return hash % 2 === 0 ? "spring" : "autumn";
+}
+
+function storybookSeasonKey(selection, top, outer) {
+  if (outer?.kind === "jumper") return "winter";
+  if (top.kind === "hoodie" && selection.outerKey === "vestWarm") return "winter";
+  if (top.kind === "hoodie" || outer?.kind === "vest") return stableSeasonVariant(selection);
+  return "summer";
+}
+
+function storybookBackgroundSvg(seasonKey, id) {
+  const src = storybookSeasonBackgrounds[seasonKey] || storybookSeasonBackgrounds.summer;
+  return `<image href="${src}" xlink:href="${src}" x="88" y="66" width="848" height="884" preserveAspectRatio="xMidYMid slice" clip-path="url(#${id}-scene-clip)"/>`;
 }
 
 function storybookBackLayer(top, outer, id) {
@@ -2063,14 +2118,7 @@ function storybookBackLayer(top, outer, id) {
 }
 
 function storybookArmsSvg() {
-  return `
-    <path d="M374 432 C340 493 324 576 333 650 C338 681 357 698 381 689 C405 680 410 656 399 626 C382 577 397 507 426 459 Z"
-      fill="#edb276" stroke="#18272b" stroke-width="7" stroke-linejoin="round"/>
-    <path d="M650 432 C684 493 700 576 691 650 C686 681 667 698 643 689 C619 680 614 656 625 626 C642 577 627 507 598 459 Z"
-      fill="#edb276" stroke="#18272b" stroke-width="7" stroke-linejoin="round"/>
-    <path d="M353 520 C347 561 349 610 359 652" fill="none" stroke="#f5c395" stroke-width="6" stroke-linecap="round" opacity="0.45"/>
-    <path d="M671 520 C677 561 675 610 665 652" fill="none" stroke="#f5c395" stroke-width="6" stroke-linecap="round" opacity="0.45"/>
-  `;
+  return storybookPartSvg("arms");
 }
 
 function storybookTopPattern(top, id) {
@@ -2208,16 +2256,11 @@ function storybookFrontHoodSvg(top, outer) {
 }
 
 function storybookHandsSvg() {
-  return `
-    <path d="M319 661 C328 643 345 635 363 639 C382 643 394 657 392 675 C390 693 376 707 356 710 C337 713 319 703 314 687 C311 677 313 668 319 661 Z"
-      fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
-    <path d="M325 675 C316 679 313 688 318 696 C323 704 333 700 338 690" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
-    <path d="M346 650 C340 664 340 681 345 693" fill="none" stroke="#f6c48f" stroke-width="5" stroke-linecap="round" opacity="0.38"/>
-    <path d="M705 661 C696 643 679 635 661 639 C642 643 630 657 632 675 C634 693 648 707 668 710 C687 713 705 703 710 687 C713 677 711 668 705 661 Z"
-      fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
-    <path d="M699 675 C708 679 711 688 706 696 C701 704 691 700 686 690" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
-    <path d="M678 650 C684 664 684 681 679 693" fill="none" stroke="#f6c48f" stroke-width="5" stroke-linecap="round" opacity="0.38"/>
-  `;
+  return storybookPartSvg("hands");
+}
+
+function storybookShortsLegsSvg(bottom) {
+  return bottom.kind === "shorts" ? storybookPartSvg("shortsLegs") : "";
 }
 
 function storybookBottomSvg(bottom) {
@@ -2232,12 +2275,6 @@ function storybookBottomSvg(bottom) {
       <circle cx="498" cy="658" r="5" fill="#473828"/><circle cx="526" cy="658" r="5" fill="#473828"/>
       <path d="M427 718 L480 728" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.4"/>
       <path d="M597 718 L544 728" stroke="${bottom.light}" stroke-width="7" stroke-linecap="round" opacity="0.4"/>
-      <path d="M419 744 C405 792 407 841 424 884 C438 894 458 891 465 878 C456 834 458 792 474 752 Z"
-        fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
-      <path d="M605 744 C619 792 617 841 600 884 C586 894 566 891 559 878 C568 834 566 792 550 752 Z"
-        fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
-      <path d="M436 780 C429 813 431 844 442 872" fill="none" stroke="#f5c395" stroke-width="5" stroke-linecap="round" opacity="0.45"/>
-      <path d="M588 780 C595 813 593 844 582 872" fill="none" stroke="#f5c395" stroke-width="5" stroke-linecap="round" opacity="0.45"/>
     `;
   }
   return `
@@ -2285,40 +2322,45 @@ function storybookShoesSvg(shoes) {
 }
 
 function storybookHeadSvg() {
-  return `
-    <path d="M468 322 L556 322 L556 396 C535 414 489 414 468 396 Z" fill="#edb276"/>
-    <path d="M405 246 C386 246 374 264 379 286 C383 306 400 315 414 302 C426 291 424 261 405 246 Z"
-      fill="#edb276" stroke="#18272b" stroke-width="6" stroke-linejoin="round"/>
-    <path d="M619 246 C638 246 650 264 645 286 C641 306 624 315 610 302 C598 291 600 261 619 246 Z"
-      fill="#edb276" stroke="#18272b" stroke-width="6" stroke-linejoin="round"/>
-    <path d="M399 269 C391 276 392 289 404 293" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round"/>
-    <path d="M625 269 C633 276 632 289 620 293" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round"/>
-    <path d="M410 250 C410 178 454 124 512 124 C570 124 614 178 614 250 C614 318 577 365 523 376 C516 378 508 378 501 376 C447 365 410 318 410 250 Z"
-      fill="#f2c18a" stroke="#18272b" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M408 237 C416 153 459 99 522 103 C584 107 621 158 619 238 C591 198 554 180 505 184 C462 188 431 206 408 237 Z"
-      fill="#1d2f34" stroke="#18272b" stroke-width="8" stroke-linejoin="round"/>
-    <path d="M407 216 C435 158 478 133 526 136 C573 139 605 167 621 218" fill="none" stroke="#40565c" stroke-width="8" stroke-linecap="round" opacity="0.58"/>
-    <path d="M430 219 C456 186 501 177 550 187" fill="none" stroke="#111f23" stroke-width="10" stroke-linecap="round"/>
-    <path d="M461 250 C471 244 483 244 493 250" fill="none" stroke="#5d4637" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
-    <path d="M531 250 C541 244 553 244 563 250" fill="none" stroke="#5d4637" stroke-width="5" stroke-linecap="round" opacity="0.55"/>
-    <ellipse cx="476" cy="267" rx="10" ry="12" fill="#18272b"/>
-    <ellipse cx="548" cy="267" rx="10" ry="12" fill="#18272b"/>
-    <circle cx="480" cy="263" r="3" fill="#ffffff" opacity="0.8"/>
-    <circle cx="552" cy="263" r="3" fill="#ffffff" opacity="0.8"/>
-    <path d="M483 318 C499 331 525 331 541 318" fill="none" stroke="#8b5736" stroke-width="6" stroke-linecap="round"/>
-    <path d="M497 337 C507 342 518 342 528 337" fill="none" stroke="#c8895a" stroke-width="3" stroke-linecap="round" opacity="0.45"/>
-    <path d="M511 280 C507 298 502 309 497 319" fill="none" stroke="#c8895a" stroke-width="5" stroke-linecap="round"/>
-    <ellipse cx="440" cy="305" rx="22" ry="14" fill="#f59e9e" opacity="0.42"/>
-    <ellipse cx="584" cy="305" rx="22" ry="14" fill="#f59e9e" opacity="0.42"/>
-  `;
+  return storybookPartSvg("head");
+}
+
+function storybookPngBackLayer(top, outer) {
+  if (top.kind !== "hoodie") return "";
+  const opacity = !outer || outer.kind === "vest" ? 1 : 0.5;
+  return storybookClothingLayer("hoods", `${top.assetKey || "default"}-back`, opacity);
+}
+
+function storybookPngTopSvg(top, outer) {
+  const folder = outer?.kind === "jumper" ? "tops-under-jumper" : "tops";
+  return storybookClothingLayer(folder, top.assetKey || "default");
+}
+
+function storybookPngOuterSvg(outer) {
+  if (!outer) return "";
+  return storybookClothingLayer("outers", outer.assetKey || "default");
+}
+
+function storybookPngFrontHoodSvg(top, outer) {
+  if (top.kind !== "hoodie" || !outer) return "";
+  return storybookClothingLayer("hoods", `${top.assetKey || "default"}-front`);
+}
+
+function storybookPngBottomSvg(bottom) {
+  return storybookClothingLayer("bottoms", bottom.assetKey || "default");
+}
+
+function storybookPngShoesSvg(shoes) {
+  return storybookClothingLayer("shoes", shoes.assetKey || "default");
 }
 
 function renderStorybookOutfit(selection, targetSize = 420) {
   const top = outfitStyle("tops", selection.shirtKey);
   const bottom = outfitStyle("bottoms", selection.pantsKey);
   const shoes = outfitStyle("shoes", selection.shoesKey);
-  const outer = selection.outerKey ? storybookOutfitStyles.outers[selection.outerKey] : null;
+  const outer = selection.outerKey ? outfitStyle("outers", selection.outerKey) : null;
   const id = storybookId(selection);
+  const seasonKey = storybookSeasonKey(selection, top, outer);
   const description = [top.name, bottom.name, shoes.name, outer?.name].filter(Boolean).join(", ");
 
   return `
@@ -2342,20 +2384,25 @@ function renderStorybookOutfit(selection, targetSize = 420) {
           <clipPath id="${id}-torso-clip">
             <path d="M384 392 C430 356 594 356 640 392 C654 458 647 587 624 675 C567 694 457 694 400 675 C377 587 370 458 384 392 Z"/>
           </clipPath>
+          <clipPath id="${id}-scene-clip">
+            <rect x="88" y="66" width="848" height="884" rx="52"/>
+          </clipPath>
         </defs>
         <rect x="70" y="48" width="884" height="920" rx="64" fill="#f8fbf6"/>
         <rect x="88" y="66" width="848" height="884" rx="52" fill="#ecf8ff"/>
         <circle cx="760" cy="170" r="54" fill="#ffffff" opacity="0.9"/>
         <path d="M222 764 C325 725 419 733 512 764 C605 733 699 725 802 764 L802 900 L222 900 Z" fill="#d8ecd0"/>
+        ${storybookBackgroundSvg(seasonKey, id)}
         <ellipse cx="512" cy="902" rx="260" ry="38" fill="#82a98d" opacity="0.34"/>
         <g filter="url(#${id}-soft-shadow)">
-          ${storybookBackLayer(top, outer, id)}
-          ${storybookBottomSvg(bottom)}
-          ${storybookShoesSvg(shoes)}
+          ${storybookPngBackLayer(top, outer)}
+          ${storybookShortsLegsSvg(bottom)}
+          ${storybookPngBottomSvg(bottom)}
+          ${storybookPngShoesSvg(shoes)}
           ${storybookArmsSvg()}
-          ${storybookTopSvg(top, outer, id)}
-          ${storybookOuterSvg(outer, id)}
-          ${storybookFrontHoodSvg(top, outer)}
+          ${storybookPngTopSvg(top, outer)}
+          ${storybookPngOuterSvg(outer)}
+          ${storybookPngFrontHoodSvg(top, outer)}
           ${storybookHandsSvg()}
           ${storybookHeadSvg()}
         </g>

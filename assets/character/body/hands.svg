@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <path d="M319 661 C328 643 345 635 363 639 C382 643 394 657 392 675 C390 693 376 707 356 710 C337 713 319 703 314 687 C311 677 313 668 319 661 Z"
+    fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M325 675 C316 679 313 688 318 696 C323 704 333 700 338 690" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+  <path d="M346 650 C340 664 340 681 345 693" fill="none" stroke="#f6c48f" stroke-width="5" stroke-linecap="round" opacity="0.38"/>
+  <path d="M705 661 C696 643 679 635 661 639 C642 643 630 657 632 675 C634 693 648 707 668 710 C687 713 705 703 710 687 C713 677 711 668 705 661 Z"
+    fill="#edb276" stroke="#17262a" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M699 675 C708 679 711 688 706 696 C701 704 691 700 686 690" fill="none" stroke="#c78654" stroke-width="4" stroke-linecap="round" opacity="0.5"/>
+  <path d="M678 650 C684 664 684 681 679 693" fill="none" stroke="#f6c48f" stroke-width="5" stroke-linecap="round" opacity="0.38"/>
+</svg>
